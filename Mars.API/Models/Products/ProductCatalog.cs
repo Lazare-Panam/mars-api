@@ -12,9 +12,6 @@ namespace Mars.API.Models.Products
         [BsonElement("id")]
         public string? Id { get; set; }
 
-        [BsonElement("category")]
-        public string? Category { get; set; }
-
         [BsonElement("bannerImage")]
         public string? BannerImage { get; set; }
 

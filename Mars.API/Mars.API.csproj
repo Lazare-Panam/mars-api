@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <Folder Include="Repository\SQL\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

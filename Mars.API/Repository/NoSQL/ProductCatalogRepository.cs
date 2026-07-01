@@ -7,7 +7,7 @@ namespace Mars.API.Repository.NoSQL
     public class ProductCatalogRepository : IProductCatalogRepository
     {
         private readonly IMongoCollection<ProductCatalog> _collection;
-        private readonly string collectionName = "product_catalog";
+        private readonly string collectionName = "product_series";
         public ProductCatalogRepository(IMongoDatabase database)
         {
             _collection = database.GetCollection<ProductCatalog>(collectionName);

@@ -16,16 +16,10 @@ namespace Mars.API.Models.Products
         [BsonElement("thumbnailImage")]
         public string? ThumbnailImage { get; set; }
 
-        [BsonElement("images")]
-        public List<string>? Images { get; set; }
-
         [BsonElement("specs")]
         public Dictionary<string, string>? Specs { get; set; }
 
         [BsonElement("features")]
         public List<string>? Features { get; set; }
-
-        [BsonElement("tags")]
-        public List<string>? Tags { get; set; }
     }
 }

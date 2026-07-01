@@ -1,5 +1,7 @@
 using Mars.API.Repository.Interfaces;
 using Mars.API.Repository.NoSQL;
+using Mars.API.Services.Interfaces;
+using Mars.API.Services.Products;
 using Mars.API.Settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -15,6 +17,7 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(nam
     return new MongoClient(settings.ConnectionString).GetDatabase(settings.DatabaseName);
 });
 builder.Services.AddScoped<IProductCatalogRepository, ProductCatalogRepository>();
+builder.Services.AddScoped<IProductCatalogService, ProductCatalogService>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

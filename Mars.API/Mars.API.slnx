@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../Mars.Tests/Mars.Tests.csproj" />
+  <Project Path="Mars.API.csproj" />
+</Solution>

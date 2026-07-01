@@ -1,0 +1,6 @@
+@Mars.API_HostAddress = http://localhost:5177
+
+GET {{Mars.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

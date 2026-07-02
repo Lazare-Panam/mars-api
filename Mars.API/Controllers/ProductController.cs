@@ -43,5 +43,15 @@ namespace Mars.API.Controllers
 
             return Ok(detail);
         }
+        [HttpGet("{id}/products/{seriesId}/variants")]
+        public async Task<IActionResult> GetProductVariants(string id, string seriesId, CancellationToken ct)
+        {
+            var variants = await _productService.GetProductVariantsAsync(id, seriesId, ct);
+
+            if (variants is null)
+                return NotFound($"No variants found for series: {seriesId}");
+
+            return Ok(variants);
+        }
     }
 }

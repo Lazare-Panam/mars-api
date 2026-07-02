@@ -20,9 +20,9 @@ namespace Mars.API.Repository.NoSQL
         /// </summary>
         /// <param name="id">The product catalog identifier.</param>
         /// <returns>The matching <see cref="ProductCatalog"/> if found, or <c>null</c> otherwise.</returns>
-        public async Task<ProductCatalog?> GetByIdAsync(string id)
+        public async Task<ProductCatalog?> GetByIdAsync(string id, CancellationToken ct)
         {
-            return await _collection.Find(x=>x.Id==id).FirstOrDefaultAsync();
+            return await _collection.Find(x=>x.Id==id).FirstOrDefaultAsync(ct);
         }
     }
 }

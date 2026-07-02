@@ -15,9 +15,19 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(nam
 {
     var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
     return new MongoClient(settings.ConnectionString).GetDatabase(settings.DatabaseName);
+}); 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("MarsPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
 });
 builder.Services.AddScoped<IProductCatalogRepository, ProductCatalogRepository>();
-builder.Services.AddScoped<IProductCatalogService, ProductCatalogService>();
+builder.Services.AddScoped<IProductDetailRepository, ProductDetailRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -27,6 +37,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("MarsPolicy");
 app.UseAuthorization();
 app.MapControllers();
 

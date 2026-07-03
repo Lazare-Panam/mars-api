@@ -5,7 +5,7 @@ using Mars.API.Services.Interfaces;
 namespace Mars.API.Services.Products
 {
     public class ProductService : IProductService
-    {
+    {//
         private readonly IProductCatalogRepository _catalogRepository;
         private readonly IProductDetailRepository _detailRepository;
         private readonly IProductVariantRepository _variantRepository;

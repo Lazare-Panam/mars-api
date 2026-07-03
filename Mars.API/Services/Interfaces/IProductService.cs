@@ -10,7 +10,7 @@ namespace Mars.API.Services.Interfaces
         /// <param name="id">The catalog identifier.</param>
         /// <returns>The matching product catalog, or null if no catalog is found.</returns>
         Task<ProductCatalog?> GetCatalogByIdAsync(string id, CancellationToken ct = default);
-        Task<ProductDetail?> GetProductDetailAsync(string catalogId, string productId, CancellationToken ct = default);
+        Task<ProductDetail?> GetProductDetailAsync(string id, CancellationToken ct = default);
         Task<ProductSeriesVariants?> GetProductVariantsAsync(string catalogId, string seriesId, CancellationToken ct = default);
     }
 }

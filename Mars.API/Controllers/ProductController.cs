@@ -23,6 +23,7 @@ namespace Mars.API.Controllers
         /// </summary>
         /// <param name="id">The catalog ID.</param>
         /// <returns>The catalog when found; otherwise, a 404 Not Found result with the requested ID.</returns>
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCatalog(string id, CancellationToken ct)
         {
@@ -33,13 +34,13 @@ namespace Mars.API.Controllers
 
             return Ok(catalog);
         }
-        [HttpGet("{id}/products/{productId}")]
-        public async Task<IActionResult> GetProductDetail(string id, string productId, CancellationToken ct)
+        [HttpGet("{id}/detail")]
+        public async Task<IActionResult> GetProductDetail(string id, CancellationToken ct)
         {
-            var detail = await _productService.GetProductDetailAsync(id, productId, ct);
+            var detail = await _productService.GetProductDetailAsync(id, ct);
 
             if (detail is null)
-                return NotFound($"No product found for ID: {productId} in catalog: {id}");
+                return NotFound($"No detail found for ID: {id}");
 
             return Ok(detail);
         }

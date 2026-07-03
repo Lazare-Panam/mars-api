@@ -30,9 +30,9 @@ namespace Mars.API.Services.Products
         {
             return await _catalogRepository.GetByIdAsync(id, ct);
         }
-        public async Task<ProductDetail?> GetProductDetailAsync(string catalogId, string productId, CancellationToken ct = default)
+        public async Task<ProductDetail?> GetProductDetailAsync(string id, CancellationToken ct = default)
         {
-            return await _detailRepository.GetByProductIdAsync(catalogId, productId, ct);
+            return await _detailRepository.GetByIdAsync(id, ct);
         }
         public async Task<ProductSeriesVariants?> GetProductVariantsAsync(string catalogId, string seriesId, CancellationToken ct = default)
         {

@@ -13,9 +13,9 @@ namespace Mars.API.Repository.NoSQL
         {
             _collection = database.GetCollection<ProductDetail>(collectionName);
         }
-        public async Task<ProductDetail?> GetByProductIdAsync(string catalogId, string productId, CancellationToken ct = default)
+        public async Task<ProductDetail?> GetByIdAsync(string id, CancellationToken ct = default)
         {
-            return await _collection.Find(x => x.CatalogId == catalogId && x.Id == productId).FirstOrDefaultAsync(ct);
+            return await _collection.Find(x => x.Id == id).FirstOrDefaultAsync(ct);
         }
     }
 }

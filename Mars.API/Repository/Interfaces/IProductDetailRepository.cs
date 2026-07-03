@@ -4,6 +4,6 @@ namespace Mars.API.Repository.Interfaces
 {
     public interface IProductDetailRepository 
     {
-        Task<ProductDetail?> GetByProductIdAsync(string catalogId, string productId, CancellationToken ct = default);
+        Task<ProductDetail?> GetByIdAsync(string id, CancellationToken ct = default);
     }
 }

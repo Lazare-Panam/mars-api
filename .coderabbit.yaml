@@ -62,9 +62,21 @@ reviews:
         - Flag missing .dockerignore entries for sensitive files
 
         🧠 TEACHING QUESTIONS
-        - Ask exactly 3 questions making the dev think
-        - Do NOT give the answer — let them figure it out
-        - Questions must relate directly to mistakes in this PR
+        Ask as many questions as needed — no limit. Cover every area where the dev should think deeper.
+        Do NOT give answers. Let them figure it out.
+        Questions must be directly tied to the code in this PR and must cover:
+
+        - Code clarity: Why did you structure it this way? What would happen if X changed?
+        - How it works under the hood: What actually happens at runtime when this executes? What does the .NET runtime do here?
+        - C# internals: How does async/await work at the IL level? What is the state machine doing? What thread is this running on?
+        - Dependency injection: What lifetime did you choose and why? What breaks if you chose singleton vs scoped here?
+        - MongoDB specifics: What does this query translate to in MongoDB? Is there an index supporting this? What happens at scale without one? How does the MongoDB driver handle connection pooling? What is the impact of large documents on read performance?
+        - Concurrency: Is this code thread-safe? What happens under concurrent requests? Could there be race conditions? Are you handling CancellationToken correctly at every layer?
+        - Memory and performance: Are you materialising the full collection into memory? Could this cause issues at scale? Are you streaming or buffering?
+        - Error handling: What happens if MongoDB is unavailable? Is this error surfaced correctly to the client? Will Application Insights capture this?
+        - API design: Is this endpoint RESTful? Is the status code semantically correct? What should the client do on a 404 vs 500?
+        - Patterns: Could this benefit from CQRS? Why or why not? Is the repository abstraction adding value here or just noise?
+        - Azure: What happens when the Container App scales to multiple instances? Is there any shared state that could break? How does health check affect traffic routing?
 
         📚 RESOURCES TO READ
         - Link exact Microsoft .NET and Azure docs relevant to issues found

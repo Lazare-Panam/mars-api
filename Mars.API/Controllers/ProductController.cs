@@ -9,20 +9,10 @@ namespace Mars.API.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ProductController"/> class.
-        /// </summary>
         public ProductController(IProductService productService)
         {
             _productService = productService;
         }
-
-        /// <summary>
-        /// Gets a product catalog by its ID.
-        /// </summary>
-        /// <param name="id">The catalog ID.</param>
-        /// <returns>The catalog when found; otherwise, a 404 Not Found result with the requested ID.</returns>
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCatalog(string id, CancellationToken ct)
@@ -44,13 +34,13 @@ namespace Mars.API.Controllers
 
             return Ok(detail);
         }
-        [HttpGet("{id}/products/{seriesId}/variants")]
-        public async Task<IActionResult> GetProductVariants(string id, string seriesId, CancellationToken ct)
+        [HttpGet("{id}/variants")]
+        public async Task<IActionResult> GetProductVariants(string id, CancellationToken ct)
         {
-            var variants = await _productService.GetProductVariantsAsync(id, seriesId, ct);
+            var variants = await _productService.GetProductVariantsAsync(id, ct);
 
             if (variants is null)
-                return NotFound($"No variants found for series: {seriesId}");
+                return NotFound($"No variants found for ID: {id}");
 
             return Ok(variants);
         }

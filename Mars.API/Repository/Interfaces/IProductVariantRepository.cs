@@ -4,6 +4,6 @@ namespace Mars.API.Repository.Interfaces
 {
     public interface IProductVariantRepository
     {
-        Task<ProductSeriesVariants?> GetBySeriesIdAsync(string catalogId, string seriesId, CancellationToken ct = default);
+        Task<ProductSeriesVariants?> GetBySeriesIdAsync(string id, CancellationToken ct = default);
     }
 }

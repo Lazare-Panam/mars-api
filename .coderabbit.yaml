@@ -27,6 +27,8 @@ reviews:
         - HTTP responses: correct status codes returned?
         - Async/await: used correctly throughout?
         - IDisposable: resources properly disposed with using statements?
+        - Naming Convention: If all the vairables and functions have been given appropriate names that follow engineering best practices
+        - Design Patterns: If any design patterns can be applied and what would that pattern be and if SOLID principles are followed and how they should be followed
 
         🧪 TESTING
         - What unit tests are missing for this PR?

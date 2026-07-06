@@ -10,11 +10,8 @@ namespace Mars.API.Models.Products
         [BsonRepresentation(BsonType.ObjectId)]
         public string? MongoId { get; set; }
 
-        [BsonElement("seriesId")]
-        public string SeriesId { get; set; } = string.Empty;
-
-        [BsonElement("catalogId")]
-        public string CatalogId { get; set; } = string.Empty;
+        [BsonElement("id")]
+        public string Id { get; set; } = string.Empty;
 
         [BsonElement("name")]
         public string Name { get; set; } = string.Empty;

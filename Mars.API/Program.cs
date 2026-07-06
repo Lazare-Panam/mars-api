@@ -5,9 +5,16 @@ using Mars.API.Services.Products;
 using Mars.API.Settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-
+using Azure.Identity;
+using Microsoft.Extensions.Logging.ApplicationInsights;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddApplicationInsightsTelemetry();
+builder.Services.AddLogging(log => 
+{
+    log.AddApplicationInsights();
+    log.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information);
+});
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

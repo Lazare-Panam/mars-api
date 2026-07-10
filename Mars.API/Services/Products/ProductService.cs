@@ -49,12 +49,12 @@ namespace Mars.API.Services.Products
         }
         public async Task<ProductSeriesVariants?> GetProductVariantsAsync(string id, CancellationToken ct = default)
         {
-            if(string.IsNullOrWhiteSpace(id))
+            if (string.IsNullOrWhiteSpace(id))
             {
-                _logger.LogWarning("GetProductVariantsAsync called with null or empty id");
+                _logger.LogWarning("GetProductVariantsAsync called with null or empty id/catalogId");
                 return null;
             }
-            var variants = await _variantRepository.GetBySeriesIdAsync(id, ct);
+            var variants = await _variantRepository.GetBySeriesIdAsync(id,  ct);
             if (variants is null)
             {
                 _logger.LogWarning("ProductSeriesVariants not found for {Id}", id);

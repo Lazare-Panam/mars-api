@@ -18,18 +18,27 @@ builder.Services.AddLogging(log =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(nameof(MongoDbSettings))); builder.Services.AddSingleton<IMongoDatabase>(sp =>
+builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(nameof(MongoDbSettings)));
+builder.Services.AddOptionsWithValidateOnStart<MongoDbSettings>()
+    .Bind(builder.Configuration.GetSection(nameof(MongoDbSettings)))
+    .Validate(settings =>
+        !string.IsNullOrWhiteSpace(settings.ConnectionString) &&
+        !string.IsNullOrWhiteSpace(settings.DatabaseName),
+        "MongoDbSettings: ConnectionString and DatabaseName must be set.");
+builder.Services.AddSingleton<IMongoDatabase>(sp =>
 {
     var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
     return new MongoClient(settings.ConnectionString).GetDatabase(settings.DatabaseName);
-}); 
+});
+var policyName = "MarsPolicy";
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000" };
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("MarsPolicy", policy =>
+    options.AddPolicy(name: policyName, policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.WithOrigins(allowedOrigins)
+              .WithMethods("GET")
+               .AllowAnyHeader();
     });
 });
 builder.Services.AddScoped<IProductCatalogRepository, ProductCatalogRepository>();

@@ -1,10 +1,11 @@
 ﻿using Mars.API.Models.Products;
 using Mars.API.Repository.Interfaces;
+using Microsoft.AspNetCore.Routing.Matching;
 using MongoDB.Driver;
 
 namespace Mars.API.Repository.NoSQL
 {
-    public class ProductVariantRepository : IProductVariantRepository
+    public class ProductVariantRepository : INoSQLRepository<ProductSeriesVariants>
     {
         private readonly IMongoCollection<ProductSeriesVariants> _collection;
         private readonly ILogger<ProductVariantRepository> _logger;
@@ -14,7 +15,7 @@ namespace Mars.API.Repository.NoSQL
             _collection = database.GetCollection<ProductSeriesVariants>(CollectionName);
             _logger = logger;
         }
-        public async Task<ProductSeriesVariants?> GetBySeriesIdAsync(string id, CancellationToken ct = default)
+        public async Task<ProductSeriesVariants?> GetByIdAsync(string id, CancellationToken ct = default)
         {
             try
             {

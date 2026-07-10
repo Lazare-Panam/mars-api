@@ -159,6 +159,18 @@ For every issue or concept raised in this review, name specific things to go rea
 - Explain why the fix matters, not just what changed.
 - Tag every issue with priority: 🔴 Must fix before merge / 🟡 Should fix soon / 🟢 Nice to have
 
+### 16. 🧹 Dead Code & Unused Artifacts
+
+Scan the diff — and the file as a whole, not just the changed lines — for anything left behind that should be flagged for removal:
+
+- **Unused imports/usings**: any `using` at the top of the file that nothing below it actually references. Name it explicitly, don't just say "check imports."
+- **Unused variables/fields**: anything declared (including via a hook, constructor injection, or `var`) and never read afterward — e.g. `var theme = useTheme();` with no `theme.` reference anywhere below, or a constructor-injected service never called.
+- **Unused constants/config entries**: an object like `LINKS = { ... }` or an enum member where one or more entries are defined but never referenced anywhere in the file or its known consumers.
+- **Dead branches**: an `if`/`switch` branch that can never be reached given the types/values involved, or a condition left over from a previous version of the logic that no longer applies.
+- **Commented-out code**: flag it plainly — either it should be deleted (git history is the real backup) or it's a TODO that should be a tracked issue instead of a comment.
+- **Orphaned files/components**: a component, class, or module that used to be imported somewhere but no longer is anywhere in the current diff or the broader codebase — flag it as a deletion candidate, don't just silently leave it.
+- **Duplicate declarations across a PR**: if the same section, method, or config block appears twice in a file (e.g. from a merge mistake or a copy-paste that wasn't fully replaced), flag it immediately as 🔴 — this is a correctness bug, not style, since whichever one "wins" at runtime/compile-time may not be the one the dev thinks is active.
+- For each item found, state clearly: delete it, or keep it with a one-line reason why it's still needed (e.g. a field that looks unused but is actually required by a serializer/reflection-based framework).
 ---
 
 ## Whole-PR sections (not per-file — run once per PR, after all files reviewed)

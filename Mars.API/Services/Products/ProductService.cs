@@ -6,11 +6,11 @@ namespace Mars.API.Services.Products
 {
     public class ProductService : IProductService
     {
-        private readonly IProductCatalogRepository _catalogRepository;
-        private readonly IProductDetailRepository _detailRepository;
-        private readonly IProductVariantRepository _variantRepository;
+        private readonly INoSQLRepository<ProductCatalog> _catalogRepository;
+        private readonly INoSQLRepository<ProductDetail> _detailRepository;
+        private readonly INoSQLRepository<ProductSeriesVariants> _variantRepository;
         private readonly ILogger<ProductService> _logger;
-        public ProductService(IProductCatalogRepository catalogRepository, IProductDetailRepository detailRepository, IProductVariantRepository variantRepository, ILogger<ProductService> logger)
+        public ProductService(INoSQLRepository<ProductCatalog> catalogRepository, INoSQLRepository<ProductDetail> detailRepository, INoSQLRepository<ProductSeriesVariants> variantRepository, ILogger<ProductService> logger)
         {
             _catalogRepository = catalogRepository  ;
             _detailRepository = detailRepository;
@@ -54,7 +54,7 @@ namespace Mars.API.Services.Products
                 _logger.LogWarning("GetProductVariantsAsync called with null or empty id/catalogId");
                 return null;
             }
-            var variants = await _variantRepository.GetBySeriesIdAsync(id,  ct);
+            var variants = await _variantRepository.GetByIdAsync(id, ct);
             if (variants is null)
             {
                 _logger.LogWarning("ProductSeriesVariants not found for {Id}", id);

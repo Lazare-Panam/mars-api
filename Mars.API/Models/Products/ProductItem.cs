@@ -4,6 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Mars.API.Models.Products
 {
+
     [BsonIgnoreExtraElements]
     public class ProductItem
     {
@@ -12,6 +13,9 @@ namespace Mars.API.Models.Products
 
         [BsonElement("name")]
         public string? Name { get; set; }
+
+        [BsonElement("subtitle")]
+        public string? Subtitle { get; set; }
 
         [BsonElement("description")]
         public string? Description { get; set; }
@@ -22,6 +26,12 @@ namespace Mars.API.Models.Products
 
         [BsonElement("thumbnailImage")]
         public string? ThumbnailImage { get; set; }
+
+        [BsonElement("tag")]
+        public string? Tag { get; set; }
+
+        [BsonElement("materialBadge")]
+        public string? MaterialBadge { get; set; }
 
         [BsonElement("specs")]
         public Dictionary<string, string>? Specs { get; set; }

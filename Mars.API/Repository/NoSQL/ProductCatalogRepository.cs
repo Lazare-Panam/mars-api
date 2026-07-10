@@ -5,7 +5,7 @@ using MongoDB.Driver;
 
 namespace Mars.API.Repository.NoSQL
 {
-    public class ProductCatalogRepository : IProductCatalogRepository
+    public class ProductCatalogRepository : INoSQLRepository<ProductCatalog>
     {
         private readonly IMongoCollection<ProductCatalog> _collection;
         private readonly ILogger<ProductCatalogRepository> _logger;

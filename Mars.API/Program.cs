@@ -1,13 +1,14 @@
+using Azure.Identity;
+using Mars.API.Models.Products;
 using Mars.API.Repository.Interfaces;
 using Mars.API.Repository.NoSQL;
 using Mars.API.Services.Interfaces;
 using Mars.API.Services.Products;
 using Mars.API.Settings;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Azure.Identity;
-using Microsoft.Extensions.Logging.ApplicationInsights;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddLogging(log => 
@@ -30,8 +31,18 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
     var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
     return new MongoClient(settings.ConnectionString).GetDatabase(settings.DatabaseName);
 });
+builder.Services.AddScoped<INoSQLRepository<ProductCatalog>, ProductCatalogRepository>();
+builder.Services.AddScoped<INoSQLRepository<ProductDetail>, ProductDetailRepository>();
+builder.Services.AddScoped<INoSQLRepository<ProductSeriesVariants>, ProductVariantRepository>();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 var policyName = "MarsPolicy";
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000" };
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+if(allowedOrigins is null || allowedOrigins.Length == 0)
+{
+    throw new InvalidOperationException("AllowedOrigins configuration is missing or empty.");
+}
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: policyName, policy =>
@@ -41,17 +52,11 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader();
     });
 });
-builder.Services.AddScoped<IProductCatalogRepository, ProductCatalogRepository>();
-builder.Services.AddScoped<IProductDetailRepository, ProductDetailRepository>();
-builder.Services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("MarsPolicy");

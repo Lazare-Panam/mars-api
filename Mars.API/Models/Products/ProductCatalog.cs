@@ -95,7 +95,6 @@ namespace Mars.API.Models.Products
         [BsonElement("subtext")] public string? Subtext { get; set; }
         [BsonElement("items")] public List<string>? Items { get; set; }
     }
-
     [BsonIgnoreExtraElements]
     public class CtaInfo
     {

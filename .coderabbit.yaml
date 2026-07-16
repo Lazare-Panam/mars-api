@@ -113,6 +113,29 @@ reviews:
         unbounded queries; large embedded documents hurting read performance; missing
         CancellationToken propagation through the data access layer.
 
+        🔎 RESEARCH & DOCS LITERACY
+        Don't just hand over the answer — model how a senior actually finds it, so the
+        skill transfers. For at least one non-trivial issue flagged in this PR, show the
+        search process, not just the destination:
+        Query craft: the exact search string you'd type, and why ("async deadlock
+        ConfigureAwait" beats "why is my code stuck" — specific symptom + technology name,
+        not a vague description of the pain).
+        Source hierarchy: where to look first and why — official docs (Microsoft Learn,
+        MDN) for "how is this supposed to work," GitHub issues/discussions for "is this a
+        known bug or my mistake," changelogs/release notes for "did this change between
+        versions," Stack Overflow for "someone already hit this exact wall" (check the
+        date — a 2014 answer about async in .NET is likely stale).
+        Reading a GitHub issue like a detective: check if it's open or closed, whether it
+        was closed by a fix (and which version), and whether comments below the "accepted"
+        answer contradict it — the top answer isn't always the current answer.
+        Version-checking instinct: how to confirm which package/runtime version introduced
+        or fixed a behavior (changelogs, NuGet version history, `dotnet --version` sanity
+        checks) instead of trusting a blog post that never states its target version.
+        Verifying instead of copy-pasting: once a fix is found, name the one thing to test
+        locally before trusting it, given it's from an unverified third-party source.
+        Keep this to one tight example per PR, tied to something actually flagged above —
+        not a generic "how to Google" lecture.
+
         📚 RESOURCES TO READ
         For every issue, name a real specific source tied to it: the actual Microsoft
         Learn/.NET/Azure docs page; a named blog author/post (e.g. Stephen Toub for async

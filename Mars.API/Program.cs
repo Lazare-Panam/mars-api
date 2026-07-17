@@ -1,9 +1,11 @@
+using Azure.Communication.Email;
 using Azure.Identity;
 using Mars.API.Models.Products;
 using Mars.API.Repository.Interfaces;
 using Mars.API.Repository.NoSQL;
 using Mars.API.Repository.SQL;
 using Mars.API.Services.Interfaces;
+using Mars.API.Services.Notification;
 using Mars.API.Services.Products;
 using Mars.API.Settings;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
@@ -69,9 +71,15 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
     var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
     return new MongoClient(settings.ConnectionString).GetDatabase(settings.DatabaseName);
 });
+builder.Services.AddOptions<EmailSettings>().Bind(builder.Configuration.GetSection(nameof(EmailSettings)));
+var emailConnectionString = builder.Configuration["EmailSettings:ConnectionString"];
+builder.Services.AddSingleton(new EmailClient(emailConnectionString));
 builder.Services.AddScoped<INoSQLRepository<ProductCatalog>, ProductCatalogRepository>();
 builder.Services.AddScoped<INoSQLRepository<ProductDetail>, ProductDetailRepository>();
 builder.Services.AddScoped<INoSQLRepository<ProductSeriesVariants>, ProductVariantRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 

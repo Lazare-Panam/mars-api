@@ -9,6 +9,7 @@ using Mars.API.Services.Auth;
 using Mars.API.Services.Interfaces;
 using Mars.API.Services.Notification;
 using Mars.API.Services.Products;
+using Mars.API.Services.User;
 using Mars.API.Settings;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -115,9 +116,21 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(allowedOrigins)
               .WithMethods("GET", "POST", "PUT", "DELETE")
-               .AllowAnyHeader();
+               .AllowAnyHeader()
+               .AllowCredentials();
     });
 });
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromDays(7);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
@@ -138,6 +151,7 @@ app.UseSwaggerUI();
 app.UseCors("MarsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 app.UseHttpsRedirection();
 app.UseStatusCodePages();
 app.MapControllers();

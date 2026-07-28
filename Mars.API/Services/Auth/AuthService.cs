@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Mars.API.Services.Auth
@@ -48,6 +49,7 @@ namespace Mars.API.Services.Auth
             var token = handler.CreateToken(descriptor);
             return (token, expiresAt);
         }
+        
     }
 
 }

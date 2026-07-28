@@ -6,6 +6,8 @@ namespace Mars.API.Services.Products
 {
     public class ProductService : IProductService
     {
+        private const int FreePreviewCount = 4;
+        private const string PriceKey = "Price";
         private readonly INoSQLRepository<ProductCatalog> _catalogRepository;
         private readonly INoSQLRepository<ProductDetail> _detailRepository;
         private readonly INoSQLRepository<ProductSeriesVariants> _variantRepository;
@@ -47,20 +49,39 @@ namespace Mars.API.Services.Products
             }
             return detail;
         }
-        public async Task<ProductSeriesVariants?> GetProductVariantsAsync(string id, CancellationToken ct = default)
+        public async Task<ProductSeriesVariants?> GetProductVariantsAsync(string id, bool isAuthenticated, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
                 _logger.LogWarning("GetProductVariantsAsync called with null or empty id/catalogId");
                 return null;
             }
+
             var variants = await _variantRepository.GetByIdAsync(id, ct);
             if (variants is null)
             {
                 _logger.LogWarning("ProductSeriesVariants not found for {Id}", id);
                 return null;
             }
+
+            ApplyPricingVisibility(variants.Variants, isAuthenticated);
             return variants;
+        }
+
+        /// <summary>
+        /// Logged-in users see full pricing on every variant.
+        /// Anonymous users see pricing on the first N variants only (teaser preview);
+        /// price is fully removed (not nulled) from every variant after that.
+        /// </summary>
+        private static void ApplyPricingVisibility(IList<ProductVariant>? variants, bool isAuthenticated)
+        {
+            if (variants is null || isAuthenticated) return;
+
+            for (int i = 0; i < variants.Count; i++)
+            {
+                if (i >= FreePreviewCount)
+                    variants[i].Specs?.Remove(PriceKey);
+            }
         }
     }
 }

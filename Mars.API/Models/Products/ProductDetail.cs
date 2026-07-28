@@ -21,6 +21,9 @@ namespace Mars.API.Models.Products
         [BsonRepresentation(BsonType.String)]
         public ProductType? Type { get; set; }
 
+        [BsonElement("datasheet")]
+        public string? DatasheetId { get; set; } = string.Empty;
+
         [BsonElement("name")]
         public string Name { get; set; } = string.Empty;
 

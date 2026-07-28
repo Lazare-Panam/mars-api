@@ -51,7 +51,7 @@ namespace Mars.API.Services.Notification
         private async Task SendEnquiryInternalNotificationAsync(string userName, string userEmail, string userCompany, string userCountry, string message)
         {
             var body = _templateService.GetEnquiryInternalHtml(userName, userCompany, userEmail, userCountry, message);
-            await _emailService.SendEmailAsync("marketing@panamvalve.com", $"URGENT: New Technical Enquiry from {userCompany}", body);
+            await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"URGENT: New Technical Enquiry from {userCompany}", body);
         }
     }
 }

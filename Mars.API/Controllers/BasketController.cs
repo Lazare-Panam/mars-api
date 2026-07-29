@@ -14,7 +14,7 @@ namespace Mars.API.Controllers
         private string? GetUserId()
         {
            var userId = HttpContext.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-            return userId ?? string.Empty;
+           return userId;
         }
         private const string SessionKeyName = "BasketSessionId";
         private string GetSessionId()

@@ -1,6 +1,7 @@
 ﻿using Mars.API.Models.Basket;
 using Mars.API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
@@ -10,9 +11,12 @@ namespace Mars.API.Controllers
     [Route("api/basket")]
     public class BasketController(ICartService cartService) : ControllerBase
     {
-        private string? GetUserId() =>
-            User.FindFirstValue(ClaimTypes.NameIdentifier);
-
+        private string? GetUserId()
+        {
+           var userId = HttpContext.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            return userId ?? string.Empty;
+        }
+        private const string SessionKeyName = "BasketSessionId";
         private string GetSessionId()
         {
             if (HttpContext.Session is null)
@@ -20,12 +24,12 @@ namespace Mars.API.Controllers
                 return Guid.NewGuid().ToString();
             }
 
-            var existingId = HttpContext.Session.GetString("BasketSessionId");
+            var existingId = HttpContext.Session.GetString(SessionKeyName);
 
             if (string.IsNullOrEmpty(existingId))
             {
                 existingId = HttpContext.Session.Id;
-                HttpContext.Session.SetString("BasketSessionId", existingId);
+                HttpContext.Session.SetString(SessionKeyName, existingId);
             }
 
             return existingId;

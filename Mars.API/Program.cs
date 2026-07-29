@@ -123,7 +123,6 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromDays(7);
@@ -153,6 +152,7 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("MarsPolicy");
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();

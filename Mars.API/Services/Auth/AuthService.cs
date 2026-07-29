@@ -23,7 +23,7 @@ namespace Mars.API.Services.Auth
         }
         public (string Token, DateTime ExpiresAt) CreateToken(ApplicationUser user, IEnumerable<string> roles)
         {
-            var expiresAt = DateTime.UtcNow.AddMinutes(_settings.ExpiryMinutes);
+            var expiresAt = DateTime.UtcNow.AddMinutes(_settings.ExpireMinutes);
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, user.Id),

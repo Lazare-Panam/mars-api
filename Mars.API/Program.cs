@@ -88,12 +88,14 @@ var emailConnectionString = builder.Configuration["EmailSettings:ConnectionStrin
 builder.Services.AddSingleton(new EmailClient(emailConnectionString));
 builder.Services.AddScoped<INoSQLRepository<ProductCatalog>, ProductCatalogRepository>();
 builder.Services.AddScoped<INoSQLRepository<ProductDetail>, ProductDetailRepository>();
-builder.Services.AddScoped<INoSQLRepository<ProductSeriesVariants>, ProductVariantRepository>();
+builder.Services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IStockProductRepository, StockProductRepository>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDBContext>().AddDefaultTokenProviders();
 builder.Services.AddProblemDetails(options =>
 {
@@ -133,6 +135,8 @@ builder.Services.AddSession(options =>
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 var app = builder.Build();
+
+
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();

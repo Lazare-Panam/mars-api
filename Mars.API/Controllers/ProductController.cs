@@ -61,5 +61,13 @@ namespace Mars.API.Controllers
 
             return Ok(variants);
         }
+        [HttpGet("stock")]
+        public async Task<IActionResult> GetStockProducts(CancellationToken ct)
+        {
+            _logger.LogInformation("GetStockProducts called");
+            var stockProducts = await _productService.GetStockProductsAsync(ct);
+
+            return Ok(stockProducts);
+        }
     }
 }

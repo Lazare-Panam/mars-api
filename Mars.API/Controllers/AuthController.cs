@@ -41,7 +41,10 @@ namespace Mars.API.Controllers
                 FirstName = registerDTO.FirstName,
                 LastName = registerDTO.LastName,
                 UserName = registerDTO.Email,
-                Email = registerDTO.Email
+                Email = registerDTO.Email,
+                PhoneNumber = registerDTO.PhoneNumber,
+                CompanyName = registerDTO.CompanyName,
+                Country = registerDTO.Country,
             };
 
             var result = await _userManager.CreateAsync(user, registerDTO.Password);

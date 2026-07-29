@@ -57,17 +57,7 @@ namespace Mars.API.Controllers
 
             var userId = GetUserId();
             var sessionId = GetSessionId();
-
-            var item = new BasketItem
-            {
-                ProductId = request.ProductId,
-                ProductDescription = request.ProductDescription,
-                UnitPrice = request.UnitPrice,
-                Quantity = request.Quantity,
-                PictureUrl = request.PictureUrl
-            };
-
-            var basket = await cartService.AddOrUpdate(userId, sessionId, item);
+            var basket = await cartService.AddOrUpdate(userId, sessionId, request);
             return Ok(basket);
         }
 

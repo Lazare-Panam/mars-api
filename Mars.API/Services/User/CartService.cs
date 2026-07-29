@@ -1,4 +1,7 @@
-﻿using Mars.API.Models.Basket;
+﻿using Azure.Core;
+using Mars.API.Models.Basket;
+using Mars.API.Repository.Interfaces;
+using Mars.API.Repository.NoSQL;
 using Mars.API.Repository.SQL;
 using Mars.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -8,12 +11,14 @@ namespace Mars.API.Services.User
     public class CartService : ICartService
     {
         private readonly ILogger<CartService> _logger;
+        private readonly IProductVariantRepository _productVariantRepository;
         private readonly ApplicationDBContext _context;
 
-        public CartService(ILogger<CartService> logger, ApplicationDBContext context)
+        public CartService(ILogger<CartService> logger, ApplicationDBContext context, IProductVariantRepository productVariantRepository)
         {
             _logger = logger;
             _context = context;
+            _productVariantRepository = productVariantRepository;
         }
         public async Task<CustomerBasket?> GetBasketAsync(string? userId, string sessionId)
         {
@@ -22,9 +27,19 @@ namespace Mars.API.Services.User
                 : await _context.CustomerBaskets.Include(b => b.Items).FirstOrDefaultAsync(b => b.SessionId == sessionId);
         }
 
-        public async Task<CustomerBasket> AddOrUpdate(string? userId, string sessionId, BasketItem item)
+        public async Task<CustomerBasket> AddOrUpdate(string? userId, string sessionId, AddToCartRequest addToCartRequest)
         {
+
             CustomerBasket? basket;
+            decimal? price = await _productVariantRepository.GetPriceAsync(addToCartRequest.SeriesId, addToCartRequest.VariantId);
+            var item = new BasketItem
+            {
+                ProductId = addToCartRequest.VariantId,
+                ProductDescription = addToCartRequest.ProductDescription,
+                UnitPrice = price??0m,
+                Quantity = addToCartRequest.Quantity,
+                PictureUrl = addToCartRequest.PictureUrl
+            };
 
             if (!string.IsNullOrEmpty(userId))
             {
@@ -63,8 +78,7 @@ namespace Mars.API.Services.User
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Basket {BasketId} updated for user {UserId}, product {ProductId}",
-                basket.CustomerBasketId, userId, item.ProductId);
+            _logger.LogInformation("Basket {BasketId} updated for user {UserId}, product {VariantId}",basket.CustomerBasketId, userId, item.ProductId);
 
             return basket;
         }

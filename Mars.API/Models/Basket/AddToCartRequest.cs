@@ -1,9 +1,10 @@
 ﻿namespace Mars.API.Models.Basket
 {
     public record AddToCartRequest(
-        string ProductId,
+        string SeriesId,
+        string VariantId,
         string ProductDescription,
-        decimal UnitPrice,
+   
         int Quantity,
         string PictureUrl
     );

@@ -10,13 +10,15 @@ namespace Mars.API.Services.Products
         private const string PriceKey = "Price";
         private readonly INoSQLRepository<ProductCatalog> _catalogRepository;
         private readonly INoSQLRepository<ProductDetail> _detailRepository;
-        private readonly INoSQLRepository<ProductSeriesVariants> _variantRepository;
+        private readonly IProductVariantRepository _variantRepository;
+        private readonly IStockProductRepository _stockProductRepository;
         private readonly ILogger<ProductService> _logger;
-        public ProductService(INoSQLRepository<ProductCatalog> catalogRepository, INoSQLRepository<ProductDetail> detailRepository, INoSQLRepository<ProductSeriesVariants> variantRepository, ILogger<ProductService> logger)
+        public ProductService(INoSQLRepository<ProductCatalog> catalogRepository, INoSQLRepository<ProductDetail> detailRepository, IProductVariantRepository variantRepository, IStockProductRepository stockProductRepository, ILogger<ProductService> logger)
         {
             _catalogRepository = catalogRepository  ;
             _detailRepository = detailRepository;
             _variantRepository = variantRepository;
+            _stockProductRepository = stockProductRepository;
             _logger = logger;
         }
         public async Task<ProductCatalog?> GetCatalogByIdAsync(string id, CancellationToken ct = default)
@@ -82,6 +84,11 @@ namespace Mars.API.Services.Products
                 if (i >= FreePreviewCount)
                     variants[i].Specs?.Remove(PriceKey);
             }
+        }
+
+        public async Task<IEnumerable<ProductDetail>> GetStockProductsAsync(CancellationToken ct = default)
+        {
+            return await _stockProductRepository.GetAllStockProductsAsync(ct);
         }
     }
 }

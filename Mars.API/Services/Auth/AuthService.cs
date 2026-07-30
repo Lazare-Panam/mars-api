@@ -14,11 +14,9 @@ namespace Mars.API.Services.Auth
 {
     public class AuthService : IAuthService
     {
-        private readonly UserManager<ApplicationUser> _userManager; 
         private readonly JwtSettings _settings;
-        public AuthService(UserManager<ApplicationUser> userManager, IOptions<JwtSettings> options)
+        public AuthService(IOptions<JwtSettings> options)
         {
-            _userManager = userManager;
             _settings = options.Value;
         }
         public (string Token, DateTime ExpiresAt) CreateToken(ApplicationUser user, IEnumerable<string> roles)
@@ -45,8 +43,7 @@ namespace Mars.API.Services.Auth
                 SigningCredentials = credentials
             };
 
-            var handler = new JsonWebTokenHandler();
-            var token = handler.CreateToken(descriptor);
+            var token = new JsonWebTokenHandler().CreateToken(descriptor);
             return (token, expiresAt);
         }
         

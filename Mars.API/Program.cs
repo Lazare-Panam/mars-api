@@ -12,6 +12,7 @@ using Mars.API.Services.Products;
 using Mars.API.Services.User;
 using Mars.API.Settings;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -41,15 +42,20 @@ builder.Services.AddOptionsWithValidateOnStart<MongoDbSettings>().Bind(builder.C
         !string.IsNullOrWhiteSpace(settings.DatabaseName),
         "MongoDbSettings: ConnectionString and DatabaseName must be set.");
 
-builder.Services.AddOptions<JwtSettings>().Bind(builder.Configuration.GetSection(nameof(JwtSettings)));
+builder.Services.AddOptionsWithValidateOnStart<JwtSettings>().Bind(builder.Configuration.GetSection(nameof(JwtSettings)))
+    .Validate(settings =>
+        !string.IsNullOrWhiteSpace(settings.Key) &&
+        !string.IsNullOrWhiteSpace(settings.Issuer) &&
+        !string.IsNullOrWhiteSpace(settings.Audience),
+        "JwtSettings: Key, Issuer, and Audience must be set.");
+
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 if(key.Length<32)
 {
     throw new InvalidOperationException("JWT Key must be at least 32 bytes long for security reasons.");
 }
-builder.Services
-.AddAuthentication(options =>
+builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;

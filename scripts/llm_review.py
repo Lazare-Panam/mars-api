@@ -87,25 +87,48 @@ def main() -> int:
 
     try:
         with urllib.request.urlopen(req, timeout=90) as resp:
-            body = json.loads(resp.read())
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
-        print(f"Claude API call failed: {e}", file=sys.stderr)
-        write_output(FALLBACK_MESSAGE)
+            raw_body = resp.read()
+            body = json.loads(raw_body)
+    except urllib.error.HTTPError as e:
+        # Anthropic puts the actual error message in the response BODY, not
+        # just the HTTP status — e.read() gets that body, str(e) alone would
+        # only give us "HTTP Error 401: Unauthorized" with no real explanation.
+        try:
+            error_body = e.read().decode("utf-8", errors="replace")
+        except Exception:
+            error_body = "(could not read error response body)"
+        write_output(debug_output(f"HTTP {e.code} from Claude API", error_body))
+        return 0
+    except (urllib.error.URLError, TimeoutError) as e:
+        write_output(debug_output("Network error calling Claude API", str(e)))
         return 0
     except Exception as e:
-        print(f"Unexpected error calling Claude API: {e}", file=sys.stderr)
-        write_output(FALLBACK_MESSAGE)
+        write_output(debug_output("Unexpected error calling Claude API", str(e)))
         return 0
 
     text_blocks = [b["text"] for b in body.get("content", []) if b.get("type") == "text"]
     review_text = "\n".join(text_blocks).strip()
 
     if not review_text:
-        write_output(FALLBACK_MESSAGE)
+        write_output(debug_output(
+            "Claude API responded but no review text was found in the response",
+            json.dumps(body, indent=2)[:3000],
+        ))
         return 0
 
     write_output(f"## Backend Review (automated)\n\n{review_text}\n")
     return 0
+
+
+def debug_output(summary: str, detail: str) -> str:
+    return (
+        "## Backend Review (LLM step)\n\n"
+        f"_The automated review could not complete: **{summary}**_\n\n"
+        "<details><summary>Error detail (temporary, for debugging)</summary>\n\n"
+        f"```\n{detail}\n```\n"
+        "</details>\n\n"
+        "_Static analysis and CodeQL results above are unaffected — this step is advisory only._\n"
+    )
 
 
 def write_output(content: str) -> None:

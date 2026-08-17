@@ -63,15 +63,15 @@ jobs:
           dotnet-version: "8.0.x" # <- confirm against your actual <TargetFramework>
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore Mars.API/Mars.API.csproj
 
       - name: Build with analyzers
         run: |
-          dotnet build --no-restore /flp:logfile=build-warnings.log;v=diag \
+          dotnet build Mars.API/Mars.API.csproj --no-restore /flp:logfile=build-warnings.log;v=diag \
             | tee build-output.txt
 
       - name: Check for vulnerable NuGet packages
-        run: dotnet list package --vulnerable --include-transitive | tee vulnerable-packages.txt
+        run: dotnet list Mars.API/Mars.API.csproj package --vulnerable --include-transitive | tee vulnerable-packages.txt
 
       - uses: github/codeql-action/init@v3
         with:

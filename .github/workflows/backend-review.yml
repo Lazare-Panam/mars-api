@@ -1,9 +1,11 @@
 name: backend-review
 
-# Triggered by commenting "/review" on a PR — replaces the push-on-any-branch
-# trigger entirely. Tradeoff: you lose instant feedback on every push, but gain
-# zero wasted runs and the comment itself becomes an audit trail of when a
-# review was actually requested.
+# Triggered by commenting "/review" on a PR. Reviews run PER FILE — each
+# changed .cs/.csproj file gets its own Claude API call and its own PR
+# comment, posted as soon as that file's review completes (not one giant
+# comment at the end). This is intentional: smaller calls are less likely to
+# time out, you see visible progress, and one bad file's review failing
+# doesn't take the rest down with it.
 #
 # SECURITY NOTE: issue_comment fires in the BASE repo's context, so secrets are
 # available even for fork PRs. Since this job checks out and builds the PR's
@@ -16,8 +18,6 @@ on:
 
 jobs:
   review:
-    # Only fire on PR comments (issue_comment also fires on plain issues),
-    # only for the /review command, and only from a trusted commenter.
     if: >
       github.event.issue.pull_request &&
       contains(github.event.comment.body, '/review') &&
@@ -28,9 +28,6 @@ jobs:
       pull-requests: write
       security-events: write
     steps:
-      # issue_comment's payload doesn't include the PR's head SHA/branch —
-      # only the issue number — so we look it up explicitly rather than
-      # guessing at a branch name.
       - name: Look up PR details
         id: pr
         env:
@@ -50,9 +47,6 @@ jobs:
           gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
             -f content='+1'
 
-      # Pinned to the exact head SHA at the moment the comment fired, not the
-      # mutable branch name — avoids reviewing code that landed after /review
-      # was typed.
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.pr.outputs.head_sha }}
@@ -60,7 +54,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x" # <- confirm against your actual <TargetFramework>
+          dotnet-version: '8.0.x'
 
       - name: Restore
         run: dotnet restore Mars.API/Mars.API.csproj
@@ -89,19 +83,14 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
-      - name: Run LLM review
+      # The script now posts each file's comment itself as it goes, so it
+      # needs the PR number and a token — no separate "post to PR" step after.
+      - name: Run per-file LLM review
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python3 scripts/llm_review.py
-        continue-on-error: true # advisory step — never fail the job over this
-
-      - name: Post review to PR
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ -f review-output.md ]; then
-            gh pr comment "${{ steps.pr.outputs.number }}" --repo "${{ github.repository }}" --body-file review-output.md
-          fi
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: python3 scripts/llm_review.py
         continue-on-error: true

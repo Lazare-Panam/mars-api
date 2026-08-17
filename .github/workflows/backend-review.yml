@@ -1,0 +1,107 @@
+name: backend-review
+
+# Triggered by commenting "/review" on a PR — replaces the push-on-any-branch
+# trigger entirely. Tradeoff: you lose instant feedback on every push, but gain
+# zero wasted runs and the comment itself becomes an audit trail of when a
+# review was actually requested.
+#
+# SECURITY NOTE: issue_comment fires in the BASE repo's context, so secrets are
+# available even for fork PRs. Since this job checks out and builds the PR's
+# code, we gate on author_association below so only the owner/members/
+# collaborators can trigger a build of someone else's code with our secrets in
+# scope. Don't remove that check if this repo ever accepts outside PRs.
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  review:
+    # Only fire on PR comments (issue_comment also fires on plain issues),
+    # only for the /review command, and only from a trusted commenter.
+    if: >
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/review') &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+    steps:
+      # issue_comment's payload doesn't include the PR's head SHA/branch —
+      # only the issue number — so we look it up explicitly rather than
+      # guessing at a branch name.
+      - name: Look up PR details
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.issue.number }}"
+          PR_JSON=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" \
+            --json headRefOid,baseRefName,number)
+          echo "number=$(echo "$PR_JSON" | jq -r .number)" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$(echo "$PR_JSON" | jq -r .headRefOid)" >> "$GITHUB_OUTPUT"
+          echo "base_ref=$(echo "$PR_JSON" | jq -r .baseRefName)" >> "$GITHUB_OUTPUT"
+
+      - name: Acknowledge the comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            -f content='+1'
+
+      # Pinned to the exact head SHA at the moment the comment fired, not the
+      # mutable branch name — avoids reviewing code that landed after /review
+      # was typed.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.head_sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x" # <- confirm against your actual <TargetFramework>
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build with analyzers
+        run: |
+          dotnet build --no-restore /flp:logfile=build-warnings.log;v=diag \
+            | tee build-output.txt
+
+      - name: Check for vulnerable NuGet packages
+        run: dotnet list package --vulnerable --include-transitive | tee vulnerable-packages.txt
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+          queries: security-extended
+
+      - uses: github/codeql-action/autobuild@v3
+
+      - uses: github/codeql-action/analyze@v3
+
+      - name: Get diff against base branch
+        run: |
+          git fetch origin "${{ steps.pr.outputs.base_ref }}" --depth=1
+          git diff "origin/${{ steps.pr.outputs.base_ref }}...${{ steps.pr.outputs.head_sha }}" > diff.patch
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run LLM review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 scripts/llm_review.py
+        continue-on-error: true # advisory step — never fail the job over this
+
+      - name: Post review to PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f review-output.md ]; then
+            gh pr comment "${{ steps.pr.outputs.number }}" --repo "${{ github.repository }}" --body-file review-output.md
+          fi
+        continue-on-error: true

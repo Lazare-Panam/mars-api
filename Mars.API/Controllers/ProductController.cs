@@ -50,7 +50,7 @@ namespace Mars.API.Controllers
         public async Task<IActionResult> GetProductVariants(string id, CancellationToken ct)
         {
             _logger.LogInformation("GetProductVariants called for {Id}", id);
-            var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+            var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
             var variants = await _productService.GetProductVariantsAsync(id, isAuthenticated, ct);
 
             if (variants is null)

@@ -43,6 +43,42 @@ namespace Mars.API.Services.Notification
             }
             return result;
         }
+        public async Task<NotificationResult> HandleNewUserRegisteredAsync(string userName, string userEmail, string userCompany, string userCountry, string userJobTitle, string registrationDate)
+        {
+            var result = new NotificationResult();
+            try
+            {
+                await SendRegistrationWelcomeAsync(userName, userEmail, userCompany);
+                result.ReceiptSent = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send registration welcome email to {Email}", userEmail);
+            }
+
+            try
+            {
+                await SendRegistrationInternalNotificationAsync(userName, userEmail, userCompany, userCountry, userJobTitle, registrationDate);
+                result.InternalNotificationSent = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send internal registration notification for {Company}", userCompany);
+            }
+            return result;
+        }
+
+        private async Task SendRegistrationWelcomeAsync(string userName, string userEmail, string userCompany)
+        {
+            var body = _templateService.GetRegistrationWelcomeHtml(userName, userEmail, userCompany);
+            await _emailService.SendEmailAsync(userEmail, "Welcome to UK Mars Valve", body);
+        }
+
+        private async Task SendRegistrationInternalNotificationAsync(string userName, string userEmail, string userCompany, string userCountry, string userJobTitle, string registrationDate)
+        {
+            var body = _templateService.GetRegistrationInternalHtml(userName, userCompany, userEmail, userCountry, userJobTitle, registrationDate);
+            await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"New User Registered: {userCompany}", body);
+        }
         private async Task SendEnquiryReceiptAsync(string userName, string userEmail, string userCompany, string userCountry, string message)
         {
             var body = _templateService.GetEnquiryReceiptHtml(userName, userCompany, userEmail, userCountry, message);

@@ -13,12 +13,14 @@ namespace Mars.API.Controllers
         private readonly ILogger<AuthController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        public AuthController(IAuthService authService, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        private readonly INotificationService _notificationService;
+        public AuthController(IAuthService authService, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, INotificationService notificationService)
         {
             _authService = authService;
             _logger = logger;
             _userManager = userManager;
             _signInManager = signInManager;
+            _notificationService = notificationService;
         }
 
         [HttpPost("register")]
@@ -63,6 +65,15 @@ namespace Mars.API.Controllers
             }
 
             await _userManager.AddToRoleAsync(user, Roles.User);
+
+            await _notificationService.HandleNewUserRegisteredAsync(
+                userName: $"{user.FirstName} {user.LastName}",
+                userEmail: user.Email,
+                userCompany: user.CompanyName,
+                userCountry: user.Country,
+                userJobTitle: registerDTO.JobTitle,
+                registrationDate: DateTime.UtcNow.ToString("dd MMM yyyy")
+            );
             return Ok(new { message = "User registered successfully." });
         }
 

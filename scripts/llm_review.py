@@ -14,7 +14,7 @@ import urllib.request
 import urllib.error
 
 MODEL = "claude-sonnet-5"
-MAX_TOKENS = 4000
+MAX_TOKENS = 16000
 API_URL = "https://api.anthropic.com/v1/messages"
 
 FALLBACK_MESSAGE = (

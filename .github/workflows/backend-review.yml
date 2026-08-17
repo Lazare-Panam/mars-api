@@ -84,7 +84,7 @@ jobs:
 
       - name: Get diff against base branch
         run: |
-          git fetch origin "${{ steps.pr.outputs.base_ref }}" --depth=1
+          git fetch origin "${{ steps.pr.outputs.base_ref }}"
           git diff "origin/${{ steps.pr.outputs.base_ref }}...${{ steps.pr.outputs.head_sha }}" > diff.patch
 
       - uses: actions/setup-python@v5

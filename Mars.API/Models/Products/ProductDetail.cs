@@ -1,8 +1,10 @@
-﻿using MongoDB.Bson;
+﻿using Mars.API.Models.Enums;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Mars.API.Models.Products
 {
+    [BsonIgnoreExtraElements]
     public class ProductDetail
     {
         [BsonId]
@@ -14,6 +16,13 @@ namespace Mars.API.Models.Products
 
         [BsonElement("catalogId")]
         public string CatalogId { get; set; } = string.Empty;
+
+        [BsonElement("type")]
+        [BsonRepresentation(BsonType.String)]
+        public ProductType? Type { get; set; }
+
+        [BsonElement("datasheet")]
+        public string? DatasheetId { get; set; } = string.Empty;
 
         [BsonElement("name")]
         public string Name { get; set; } = string.Empty;

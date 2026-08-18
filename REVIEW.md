@@ -48,7 +48,7 @@ This is the "know everything about C# and the stack" section. Trigger the releva
 - **Object lifetime & disposal**: difference between `Dispose()`, finalizers, and `IAsyncDisposable`; why `using`/`await using` matters beyond "it closes the file" — explain the actual resource leak risk.
 - **LINQ & deferred execution**: whenever LINQ is used, flag whether the query is deferred (`IEnumerable<T>`) or executed (`.ToList()`/`.ToArray()`), and whether that distinction matters here (e.g. multiple enumeration re-running a DB query).
 - **Nullable reference types**: if the project has NRT enabled, treat a `!` null-forgiving operator as something to question, not accept — ask if it's masking a real null path.
-- Always connect the "under the hood" explanation back to a concrete consequence in _this_ diff — never explain a CLR mechanic in the abstract with no tie to the actual code.
+- Always connect the "under the hood" explanation back to a concrete consequence in *this* diff — never explain a CLR mechanic in the abstract with no tie to the actual code.
 
 ### 5. 🧠 Teaching Questions
 
@@ -171,7 +171,6 @@ Scan the diff — and the file as a whole, not just the changed lines — for an
 - **Orphaned files/components**: a component, class, or module that used to be imported somewhere but no longer is anywhere in the current diff or the broader codebase — flag it as a deletion candidate, don't just silently leave it.
 - **Duplicate declarations across a PR**: if the same section, method, or config block appears twice in a file (e.g. from a merge mistake or a copy-paste that wasn't fully replaced), flag it immediately as 🔴 — this is a correctness bug, not style, since whichever one "wins" at runtime/compile-time may not be the one the dev thinks is active.
 - For each item found, state clearly: delete it, or keep it with a one-line reason why it's still needed (e.g. a field that looks unused but is actually required by a serializer/reflection-based framework).
-
 ---
 
 ## Whole-PR sections (not per-file — run once per PR, after all files reviewed)
@@ -203,7 +202,7 @@ Scan the diff — and the file as a whole, not just the changed lines — for an
 
 ### 📝 Git/PR Hygiene
 
-- Flag commit messages that don't explain _why_ (not just _what_)
+- Flag commit messages that don't explain *why* (not just *what*)
 - Flag PRs that are doing two unrelated things — should this have been split?
 
 ### 🎤 Interview Framing

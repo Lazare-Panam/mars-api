@@ -22,7 +22,7 @@ namespace Mars.API.Models.Products
         public ProductType? Type { get; set; }
 
         [BsonElement("datasheet")]
-        public string? DatasheetId { get; set; } = string.Empty;
+        public string? DatasheetId { get; set; }
 
         [BsonElement("name")]
         public string Name { get; set; } = string.Empty;

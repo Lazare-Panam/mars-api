@@ -1,6 +1,7 @@
 ﻿using Mars.API.Models.Enums;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mars.API.Models.Products
 {
@@ -11,14 +12,15 @@ namespace Mars.API.Models.Products
         [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId MongoId { get; set; }
 
+        [Required]
         [BsonElement("id")]
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
         [BsonElement("type")]
         [BsonRepresentation(BsonType.String)]
         public ProductType? Type { get; set; }
 
-        // Legacy/simple fields — still used directly by Grid-type docs
+        
         [BsonElement("bannerTitle")]
         public string? BannerTitle { get; set; }
 
@@ -31,7 +33,7 @@ namespace Mars.API.Models.Products
         [BsonElement("products")]
         public List<ProductItem>? Products { get; set; }
 
-        // Rich ProductListing-type fields — all nullable, only populated when Type == ProductListing
+
         [BsonElement("seo")]
         public SeoInfo? Seo { get; set; }
 

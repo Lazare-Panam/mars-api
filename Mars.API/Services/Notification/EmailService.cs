@@ -3,7 +3,6 @@ using Azure.Communication.Email;
 using Mars.API.Repository.Interfaces;
 using Mars.API.Settings;
 using Microsoft.Extensions.Options;
-
 namespace Mars.API.Services.Notification
 {
     public class EmailService : IEmailService
@@ -16,6 +15,7 @@ namespace Mars.API.Services.Notification
             _emailClient = emailClient;
             _logger = logger;
             _emailSettings = options.Value;
+
         }
         public async Task SendEmailAsync(string recipientEmail, string subject, string htmlBody)
         {

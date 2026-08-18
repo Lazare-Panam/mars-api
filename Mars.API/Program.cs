@@ -1,5 +1,7 @@
 using Azure.Communication.Email;
 using Azure.Identity;
+using Azure.Messaging.ServiceBus;
+using Mars.API.MessageQueues;
 using Mars.API.Models.Auth;
 using Mars.API.Models.Products;
 using Mars.API.Repository.Interfaces;
@@ -160,6 +162,16 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.Configure<ServiceBusSettings>(builder.Configuration.GetSection("ServiceBusSettings"));
+
+builder.Services.AddSingleton(sp =>
+{
+    var settings = sp.GetRequiredService<IOptions<ServiceBusSettings>>().Value;
+    return new ServiceBusClient(settings.ConnectionString);
+});
+
+builder.Services.AddSingleton<IEnquiryPublisher, EnquiryPublisher>();
+builder.Services.AddHostedService<EnquiryReceivedConsumer>();
 var app = builder.Build();
 
 

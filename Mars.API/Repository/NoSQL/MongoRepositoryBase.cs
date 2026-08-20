@@ -17,8 +17,7 @@ namespace Mars.API.Repository.NoSQL
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(id))
-                    throw new ArgumentNullException(nameof(id));
+                ArgumentException.ThrowIfNullOrWhiteSpace(id);
                 return await _collection.Find(x => x.Id == id).FirstOrDefaultAsync(ct);
             }
             catch (OperationCanceledException)

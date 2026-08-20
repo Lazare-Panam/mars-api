@@ -1,10 +1,11 @@
-﻿using MongoDB.Bson;
+﻿using Mars.API.Repository.Interfaces;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Mars.API.Models.Products
 {
     [BsonIgnoreExtraElements]
-    public class ProductSeriesVariants
+    public class ProductSeriesVariants : IHasId
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

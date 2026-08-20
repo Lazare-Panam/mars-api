@@ -1,4 +1,3 @@
-using DnsClient.Internal;
 using Mars.API.Models.Products;
 using Mars.API.Repository.Interfaces;
 using MongoDB.Driver;

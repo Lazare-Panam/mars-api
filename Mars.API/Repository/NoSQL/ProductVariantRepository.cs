@@ -6,7 +6,6 @@ namespace Mars.API.Repository.NoSQL
 {
     public class ProductVariantRepository : MongoRepositoryBase<ProductSeriesVariants>, IProductVariantRepository
     {
- 
         public ProductVariantRepository(IMongoDatabase database, ILogger<ProductVariantRepository> logger) : base(database, logger, "product_variants")
         {
 
@@ -25,7 +24,6 @@ namespace Mars.API.Repository.NoSQL
             {
                 return price;
             }
-
             return null;
         }
     }

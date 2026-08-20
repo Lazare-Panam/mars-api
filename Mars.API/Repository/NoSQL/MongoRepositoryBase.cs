@@ -13,11 +13,11 @@ namespace Mars.API.Repository.NoSQL
             _collection = database.GetCollection<T>(collectionName);
             _logger = logger;
         }
-        public async Task<T?> GetByIdAsync(string id, CancellationToken ct)
+        public async Task<T?> GetByIdAsync(string id, CancellationToken ct = default)
         {
             try
             {
-                if (id == null)
+                if (string.IsNullOrWhiteSpace(id))
                     throw new ArgumentNullException(nameof(id));
                 return await _collection.Find(x => x.Id == id).FirstOrDefaultAsync(ct);
             }
@@ -31,7 +31,6 @@ namespace Mars.API.Repository.NoSQL
                 _logger.LogError(ex, "MongoDB error fetching {EntityType} {Id}", typeof(T).Name, id);
                 throw;
             }
-        
         }
     }
 }

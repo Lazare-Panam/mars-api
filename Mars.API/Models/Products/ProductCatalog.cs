@@ -1,4 +1,5 @@
 ﻿using Mars.API.Models.Enums;
+using Mars.API.Repository.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
@@ -6,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Mars.API.Models.Products
 {
     [BsonIgnoreExtraElements]
-    public class ProductCatalog
+    public class ProductCatalog : IHasId
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

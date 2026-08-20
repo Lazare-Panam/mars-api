@@ -4,34 +4,13 @@ using MongoDB.Driver;
 
 namespace Mars.API.Repository.NoSQL
 {
-    public class ProductVariantRepository : IProductVariantRepository
+    public class ProductVariantRepository : MongoRepositoryBase<ProductSeriesVariants>, IProductVariantRepository
     {
-        private readonly IMongoCollection<ProductSeriesVariants> _collection;
-        private readonly ILogger<ProductVariantRepository> _logger;
-        private const string CollectionName = "product_variants";
-        public ProductVariantRepository(IMongoDatabase database, ILogger<ProductVariantRepository> logger)
+ 
+        public ProductVariantRepository(IMongoDatabase database, ILogger<ProductVariantRepository> logger) : base(database, logger, "product_variants")
         {
-            _collection = database.GetCollection<ProductSeriesVariants>(CollectionName);
-            _logger = logger;
-        }
-        public async Task<ProductSeriesVariants?> GetByIdAsync(string id, CancellationToken ct = default)
-        {
-            try
-            {
-                return await _collection.Find(x => x.Id == id).FirstOrDefaultAsync(ct);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogWarning("Request cancelled for ProductSeriesVariants {Id}", id);
-                throw;
-            }
-            catch (MongoException ex)
-            {
-                _logger.LogError(ex, "MongoDB error fetching ProductSeriesVariants {Id}", id);
-                throw;
-            }
-        }
 
+        }
         public async Task<decimal?> GetPriceAsync( string seriesId, string variantId, CancellationToken ct = default)
         {
             var product = await _collection.Find(x => x.Id == seriesId).FirstOrDefaultAsync(ct);

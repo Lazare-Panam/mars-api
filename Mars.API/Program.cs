@@ -65,7 +65,7 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
     return new MongoClient(settings.ConnectionString);
 });
-builder.Services.AddScoped<IMongoDatabase>(sp =>
+builder.Services.AddSingleton<IMongoDatabase>(sp =>
 {
     var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
     return sp.GetRequiredService<IMongoClient>().GetDatabase(settings.DatabaseName);

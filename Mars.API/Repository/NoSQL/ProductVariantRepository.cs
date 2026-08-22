@@ -1,4 +1,4 @@
-﻿using Mars.API.Models.Products;
+using Mars.API.Models.Products;
 using Mars.API.Repository.Interfaces;
 using MongoDB.Driver;
 
@@ -6,9 +6,10 @@ namespace Mars.API.Repository.NoSQL
 {
     public class ProductVariantRepository : MongoRepositoryBase<ProductSeriesVariants>, IProductVariantRepository
     {
-        public ProductVariantRepository(IMongoDatabase database, ILogger<ProductVariantRepository> logger) : base(database, logger, "product_variants")
-        {
+        private const string CollectionName = "product_variants";
 
+        public ProductVariantRepository(IMongoDatabase database, ILogger<ProductVariantRepository> logger) : base(database, logger, CollectionName)
+        {
         }
         public async Task<decimal?> GetPriceAsync( string seriesId, string variantId, CancellationToken ct = default)
         {

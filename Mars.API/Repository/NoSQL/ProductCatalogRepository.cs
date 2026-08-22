@@ -5,7 +5,9 @@ namespace Mars.API.Repository.NoSQL
 {
     public class ProductCatalogRepository : MongoRepositoryBase<ProductCatalog>
     {
-        public ProductCatalogRepository(IMongoDatabase database, ILogger<ProductCatalogRepository> logger) : base(database, logger, "product_series")
+        private const string CollectionName = "product_series";
+
+        public ProductCatalogRepository(IMongoDatabase database, ILogger<ProductCatalogRepository> logger) : base(database, logger, CollectionName)
         { 
         }
     }

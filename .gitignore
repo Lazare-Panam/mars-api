@@ -67,7 +67,7 @@ artifacts/
 
 # Tye
 .tye/
-appsettings.json
+
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 
@@ -483,3 +483,5 @@ $RECYCLE.BIN/
 # App Settings
 appsettings.Development.json
 appsettings.json
+GROWTH.md
+REVIEW.md

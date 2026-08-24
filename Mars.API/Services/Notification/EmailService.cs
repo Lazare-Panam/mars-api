@@ -17,6 +17,14 @@ namespace Mars.API.Services.Notification
             _emailSettings = options.Value;
 
         }
+        /// <summary>
+        /// Sends an HTML email via Azure Communication Services.
+        /// </summary>
+        /// <param name="recipientEmail">The recipient's email address.</param>
+        /// <param name="subject">The email subject line.</param>
+        /// <param name="htmlBody">The rendered HTML body to send.</param>
+        /// <exception cref="ArgumentException">Thrown if any parameter is null or whitespace.</exception>
+        /// <exception cref="RequestFailedException">Thrown if Azure Communication Services rejects or fails to send the email; logged before rethrowing.</exception>
         public async Task SendEmailAsync(string recipientEmail, string subject, string htmlBody)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(recipientEmail);

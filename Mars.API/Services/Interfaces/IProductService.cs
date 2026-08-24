@@ -29,8 +29,8 @@ namespace Mars.API.Services.Interfaces
         /// <param name="ct">Cancellation token.</param>
         /// <returns>The matching <see cref="ProductSeriesVariants"/>, or <c>null</c> if <paramref name="id"/> is empty/whitespace or no variants are found.</returns>
         Task<ProductSeriesVariants?> GetProductVariantsAsync(string id, bool isAuthenticated, CancellationToken ct = default);
-
         /// <summary>
+        /// 
         /// Retrieves all stock products.
         /// </summary>
         /// <param name="ct">Cancellation token.</param>

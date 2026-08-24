@@ -49,6 +49,23 @@ Cross-review tracker, maintained per `REVIEW.md`'s Growth Tracker section. Each 
 
 ---
 
+## 2026-08-24 — PR #39: chore: stop tracking appsettings.json (Lite Mode review)
+
+**PR summary:** Untracks `Mars.API/appsettings.json` via `git rm --cached`, adds it to `.gitignore` alongside the existing `appsettings.Development.json` entry, plus an unrelated no-op whitespace tweak in `IProductService.cs`. Small config-hygiene PR, no business logic touched — reviewed in Lite Mode.
+
+**Issues newly resolved (real progress):**
+- **Plaintext App Insights connection string — first real action after 2 prior flags (2026-07-09, 2026-07-29).** Not fully resolved (the value is still retrievable from git history; no rotation was performed, and the team explicitly decided rotation isn't warranted for this specific low-severity value), but this is the first PR to actually stop the pattern from recurring a 4th time, rather than letting it ride.
+
+**New issues found this round:**
+- 🟡 **Missing `appsettings.Production.json` becomes more urgent, not just still-open.** This is a 2nd-review-old item (2026-07-29), but it changes character here: once `appsettings.json` is untracked, Production has *zero* tracked config to fall back on for `Cors:AllowedOrigins`/`AllowedHosts`/`Logging` — it depends entirely on Azure App Service env vars being correctly configured. Flagged as a pre-merge verification item, not a code fix.
+- 🟢 Commit messages in this PR's stack (`feat:updated-gitignore` ×2, `removed-connection-string`) describe *what*, not *why* — minor hygiene note, first occurrence.
+
+**Open blockers carried into next review:**
+- `appsettings.Production.json` still doesn't exist (3rd review running this has come up, severity unchanged at 🟡 since no prod incident confirmed yet).
+- Everything carried from 2026-07-29 not touched by this PR (price tampering, JWT expiry key mismatch, exception handler wiring, catalog-scoping, duplicate-basket race, Swagger exposure, HTML injection in emails, unpersisted enquiries, half-wired refresh token, test coverage) — unchanged, this PR's scope didn't intersect with any of them.
+
+---
+
 ## 2026-07-29 — PR #4: feat:added-backend-grid-routes (full-scope review — auth, basket, email, App Insights added)
 
 **PR summary:** Major expansion since the last review — adds full JWT auth (register/login), a SQL Server/EF Core-backed basket (guest + authenticated, via a new `ApplicationDBContext`), user-enquiry submission with email notifications (Azure Communication Services), and a `GlobalExceptionHandler`/`ProblemDetails` layer. 60 files changed, +3,804/−107.

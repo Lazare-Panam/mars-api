@@ -15,7 +15,7 @@ namespace Mars.API.Services.Products
         private readonly ILogger<ProductService> _logger;
         public ProductService(INoSQLRepository<ProductCatalog> catalogRepository, INoSQLRepository<ProductDetail> detailRepository, IProductVariantRepository variantRepository, IStockProductRepository stockProductRepository, ILogger<ProductService> logger)
         {
-            _catalogRepository = catalogRepository  ;
+            _catalogRepository = catalogRepository ;
             _detailRepository = detailRepository;
             _variantRepository = variantRepository;
             _stockProductRepository = stockProductRepository;
@@ -36,6 +36,7 @@ namespace Mars.API.Services.Products
             }
             return catalog;
         }
+
         public async Task<ProductDetail?> GetProductDetailAsync(string id, CancellationToken ct = default)
         {
             if(string.IsNullOrWhiteSpace(id))
@@ -51,6 +52,7 @@ namespace Mars.API.Services.Products
             }
             return detail;
         }
+
         public async Task<ProductSeriesVariants?> GetProductVariantsAsync(string id, bool isAuthenticated, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -70,11 +72,6 @@ namespace Mars.API.Services.Products
             return variants;
         }
 
-        /// <summary>
-        /// Logged-in users see full pricing on every variant.
-        /// Anonymous users see pricing on the first N variants only (teaser preview);
-        /// price is fully removed (not nulled) from every variant after that.
-        /// </summary>
         private static void ApplyPricingVisibility(IList<ProductVariant>? variants, bool isAuthenticated)
         {
             if (variants is null || isAuthenticated) return;

@@ -15,12 +15,18 @@ namespace Mars.API.Services.Products
         private readonly ILogger<ProductService> _logger;
         public ProductService(INoSQLRepository<ProductCatalog> catalogRepository, INoSQLRepository<ProductDetail> detailRepository, IProductVariantRepository variantRepository, IStockProductRepository stockProductRepository, ILogger<ProductService> logger)
         {
-            _catalogRepository = catalogRepository  ;
+            _catalogRepository = catalogRepository;
             _detailRepository = detailRepository;
             _variantRepository = variantRepository;
             _stockProductRepository = stockProductRepository;
             _logger = logger;
         }
+        /// <summary>
+        /// Retrieves a product catalog by its id.
+        /// </summary>
+        /// <param name="id">The catalog id.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>The matching <see cref="ProductCatalog"/>, or <c>null</c> if <paramref name="id"/> is empty/whitespace or no catalog is found.</returns>
         public async Task<ProductCatalog?> GetCatalogByIdAsync(string id, CancellationToken ct = default)
         {
             if(string.IsNullOrWhiteSpace(id))
@@ -36,6 +42,13 @@ namespace Mars.API.Services.Products
             }
             return catalog;
         }
+
+        /// <summary>
+        /// Retrieves the detail record for a product by its id.
+        /// </summary>
+        /// <param name="id">The product id.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>The matching <see cref="ProductDetail"/>, or <c>null</c> if <paramref name="id"/> is empty/whitespace or no detail is found.</returns>
         public async Task<ProductDetail?> GetProductDetailAsync(string id, CancellationToken ct = default)
         {
             if(string.IsNullOrWhiteSpace(id))
@@ -51,6 +64,15 @@ namespace Mars.API.Services.Products
             }
             return detail;
         }
+
+        /// <summary>
+        /// Retrieves the series variants for a product by id, applying pricing visibility rules
+        /// based on the caller's authentication status (see <see cref="ApplyPricingVisibility"/>).
+        /// </summary>
+        /// <param name="id">The product/series id.</param>
+        /// <param name="isAuthenticated">Whether the current caller is authenticated; controls how much pricing is included.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>The matching <see cref="ProductSeriesVariants"/>, or <c>null</c> if <paramref name="id"/> is empty/whitespace or no variants are found.</returns>
         public async Task<ProductSeriesVariants?> GetProductVariantsAsync(string id, bool isAuthenticated, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -86,6 +108,11 @@ namespace Mars.API.Services.Products
             }
         }
 
+        /// <summary>
+        /// Retrieves all stock products.
+        /// </summary>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>The full set of stock <see cref="ProductDetail"/> records.</returns>
         public async Task<IEnumerable<ProductDetail>> GetStockProductsAsync(CancellationToken ct = default)
         {
             return await _stockProductRepository.GetAllStockProductsAsync(ct);

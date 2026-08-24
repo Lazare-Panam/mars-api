@@ -19,6 +19,11 @@ namespace Mars.API.Services.Notification
             _emailSettings = options.Value;
             _logger = logger;
         }
+        /// <summary>
+        /// Sends the customer receipt and internal staff notification emails for a new enquiry.
+        /// Each email is sent independently, so a failure sending one does not prevent the other.
+        /// </summary>
+        /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
         public async Task<NotificationResult> HandleNewEnquiryAsync(string userName, string userEmail, string userCompany, string userCountry, string message)
         {
             var result = new NotificationResult();
@@ -43,6 +48,11 @@ namespace Mars.API.Services.Notification
             }
             return result;
         }
+        /// <summary>
+        /// Sends the welcome email and internal staff notification email for a newly registered user.
+        /// Each email is sent independently, so a failure sending one does not prevent the other.
+        /// </summary>
+        /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
         public async Task<NotificationResult> HandleNewUserRegisteredAsync(string userName, string userEmail, string userCompany, string userCountry, string userJobTitle, string registrationDate)
         {
             var result = new NotificationResult();
@@ -68,22 +78,36 @@ namespace Mars.API.Services.Notification
             return result;
         }
 
+        /// <summary>
+        /// Renders and sends the welcome email to a newly registered user.
+        /// </summary>
         private async Task SendRegistrationWelcomeAsync(string userName, string userEmail, string userCompany)
         {
             var body = _templateService.GetRegistrationWelcomeHtml(userName, userEmail, userCompany);
             await _emailService.SendEmailAsync(userEmail, "Welcome to UK Mars Valve", body);
         }
 
+        /// <summary>
+        /// Renders and sends the internal staff notification email for a new user registration,
+        /// to the address configured in <see cref="EmailSettings.InternalAddressEmail"/>.
+        /// </summary>
         private async Task SendRegistrationInternalNotificationAsync(string userName, string userEmail, string userCompany, string userCountry, string userJobTitle, string registrationDate)
         {
             var body = _templateService.GetRegistrationInternalHtml(userName, userCompany, userEmail, userCountry, userJobTitle, registrationDate);
             await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"New User Registered: {userCompany}", body);
         }
+        /// <summary>
+        /// Renders and sends the receipt email back to the customer who submitted an enquiry.
+        /// </summary>
         private async Task SendEnquiryReceiptAsync(string userName, string userEmail, string userCompany, string userCountry, string message)
         {
             var body = _templateService.GetEnquiryReceiptHtml(userName, userCompany, userEmail, userCountry, message);
             await _emailService.SendEmailAsync(userEmail, "We've received your enquiry", body);
         }
+        /// <summary>
+        /// Renders and sends the internal staff notification email for a new technical enquiry,
+        /// to the address configured in <see cref="EmailSettings.InternalAddressEmail"/>.
+        /// </summary>
         private async Task SendEnquiryInternalNotificationAsync(string userName, string userEmail, string userCompany, string userCountry, string message)
         {
             var body = _templateService.GetEnquiryInternalHtml(userName, userCompany, userEmail, userCountry, message);

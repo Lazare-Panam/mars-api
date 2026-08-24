@@ -15,7 +15,7 @@ namespace Mars.API.Services.Products
         private readonly ILogger<ProductService> _logger;
         public ProductService(INoSQLRepository<ProductCatalog> catalogRepository, INoSQLRepository<ProductDetail> detailRepository, IProductVariantRepository variantRepository, IStockProductRepository stockProductRepository, ILogger<ProductService> logger)
         {
-            _catalogRepository = catalogRepository ;
+            _catalogRepository = catalogRepository;
             _detailRepository = detailRepository;
             _variantRepository = variantRepository;
             _stockProductRepository = stockProductRepository;

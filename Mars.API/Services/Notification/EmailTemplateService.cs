@@ -1,17 +1,25 @@
-﻿using Mars.API.Services.Interfaces;
+﻿
+using Mars.API.Services.Interfaces;
 using System.Reflection;
 
 namespace Mars.API.Services.Notification
 {
     public class EmailTemplateService : IEmailTemplateService
     {
+        private readonly ILogger<EmailTemplateService> _logger;
+        public EmailTemplateService(ILogger<EmailTemplateService> logger)
+        {
+            _logger = logger;
+        }
         /// <summary>
         /// Builds the HTML body for the receipt email sent back to the customer who submitted an enquiry.
         /// </summary>
         /// <returns>Rendered HTML with the enquiry details substituted into the template.</returns>
         public string GetEnquiryReceiptHtml(string userName, string userCompany, string userEmail, string userCountry, string enquiryMessage)
         {
+
             string htmlContent = LoadTemplate("NewEnquiry.html");
+            _logger.LogInformation("Loaded enquiry receipt template for user {@UserEmail}", userEmail);
             var replacements = new Dictionary<string, string>
             {
                 { "{{UserName}}", userName },
@@ -30,6 +38,7 @@ namespace Mars.API.Services.Notification
         public string GetEnquiryInternalHtml(string userName, string userCompany, string userEmail, string userCountry, string enquiryMessage)
         {
             string htmlContent = LoadTemplate("InternalNewEnquiry.html");
+            _logger.LogInformation("Loaded internal enquiry notification template for user {@UserEmail}", userEmail);
             var replacements = new Dictionary<string, string>
             {
                 { "{{UserName}}", userName },
@@ -47,7 +56,7 @@ namespace Mars.API.Services.Notification
         /// <param name="template">The raw HTML template containing placeholder tokens.</param>
         /// <param name="replacements">Placeholder-to-value map; a null value is substituted with an empty string.</param>
         /// <returns>The template with all placeholders substituted.</returns>
-        private string replaceTokens(string template, Dictionary<string, string> replacements)
+        private static string replaceTokens(string template, Dictionary<string, string> replacements)
         {
             var result = template;
             foreach (var item in replacements)
@@ -64,14 +73,27 @@ namespace Mars.API.Services.Notification
         /// <exception cref="FileNotFoundException">Thrown if no embedded resource matches <paramref name="fileName"/>.</exception>
         private string LoadTemplate(string fileName)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            string resourcePath = $"{assembly.GetName().Name}.EmailTemplates.{fileName}";
+            try 
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                string resourcePath = $"{assembly.GetName().Name}.EmailTemplates.{fileName}";
 
-            using Stream stream = assembly.GetManifestResourceStream(resourcePath);
-            if (stream == null) throw new FileNotFoundException($"Resource not found: {resourcePath}");
+                using Stream stream = assembly.GetManifestResourceStream(resourcePath);
+                if (stream == null)
+                {
+                    throw new FileNotFoundException($"Resource not found: {resourcePath}");
+                } 
 
-            using StreamReader reader = new StreamReader(stream);
-            return reader.ReadToEnd();
+                using StreamReader reader = new StreamReader(stream);
+                _logger.LogInformation("Successfully loaded email template: {FileName}", fileName);
+                return reader.ReadToEnd();
+            }
+            catch(FileNotFoundException ex)
+            {
+                _logger.LogError(ex, "Failed to load email template: {FileName}. Ensure the file is embedded as a resource.", fileName);
+                throw;
+            }
+           
         }
         /// <summary>
         /// Builds the HTML body for the welcome email sent to a newly registered user.
@@ -80,6 +102,7 @@ namespace Mars.API.Services.Notification
         public string GetRegistrationWelcomeHtml(string userName, string userEmail, string userCompany)
         {
             string htmlContent = LoadTemplate("NewRegistration.html");
+            _logger.LogInformation("Loaded registration welcome template for user {@UserEmail}", userEmail);
             var replacements = new Dictionary<string, string>
             {
                 { "{{UserName}}", userName },
@@ -96,6 +119,7 @@ namespace Mars.API.Services.Notification
         public string GetRegistrationInternalHtml(string userName, string userCompany, string userEmail, string userCountry, string userJobTitle, string registrationDate)
         {
             string htmlContent = LoadTemplate("NewRegistrationInternal.html");
+            _logger.LogInformation("Loaded internal registration notification template for user {@UserEmail}", userEmail);
             var replacements = new Dictionary<string, string>
             {
                 { "{{UserName}}", userName },

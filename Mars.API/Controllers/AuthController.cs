@@ -26,11 +26,12 @@ namespace Mars.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(RegisterDTO registerDTO)
         {
-            _logger.LogInformation("Register called for {Email}", registerDTO.Email);
+            _logger.LogInformation("Register called for {@Email}", registerDTO.Email);
             var existingUser = await _userManager.FindByEmailAsync(registerDTO.Email);
 
             if (existingUser != null)
             {
+                _logger.LogWarning("Registration failed for {@Email}: Email is already registered.", registerDTO.Email);
                 return Problem(
                     statusCode: StatusCodes.Status409Conflict,
                     title: "Email is already registered.",
@@ -52,6 +53,7 @@ namespace Mars.API.Controllers
             var result = await _userManager.CreateAsync(user, registerDTO.Password);
             if(!result.Succeeded)
             {
+                _logger.LogWarning("Registration failed for {@Email}: {@Errors}", registerDTO.Email, result.Errors.Select(e => e.Description));
                 return Problem(
                    statusCode: StatusCodes.Status400BadRequest,
                    title: "Registration failed.",
@@ -65,7 +67,7 @@ namespace Mars.API.Controllers
             }
 
             await _userManager.AddToRoleAsync(user, Roles.User);
-
+            _logger.LogInformation("User registered successfully: {@Email}", user.Email);
             await _notificationService.HandleNewUserRegisteredAsync(
                 userName: $"{user.FirstName} {user.LastName}",
                 userEmail: user.Email,
@@ -74,6 +76,7 @@ namespace Mars.API.Controllers
                 userJobTitle: registerDTO.JobTitle,
                 registrationDate: DateTime.UtcNow.ToString("dd MMM yyyy")
             );
+            _logger.LogInformation("Notification sent for new user registration: {@Email}", user.Email);
             return Ok(new { message = "User registered successfully." });
         }
 
@@ -83,6 +86,7 @@ namespace Mars.API.Controllers
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
+                _logger.LogWarning("Login failed for {@Email}: User not found.", dto.Email);
                 return Problem(
                     statusCode: StatusCodes.Status401Unauthorized,
                     title: "Invalid email or password.",
@@ -92,6 +96,7 @@ namespace Mars.API.Controllers
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: true);
             if (result.IsLockedOut)
             {
+                _logger.LogWarning("Login failed for {@Email}: Account is locked out.", dto.Email);
                 return Problem(
                     statusCode: StatusCodes.Status401Unauthorized,
                     title: "Account locked. Try again later.",
@@ -101,6 +106,7 @@ namespace Mars.API.Controllers
 
             if (!result.Succeeded)
             {
+                _logger.LogWarning("Login failed for {@Email}: Invalid email or password.", dto.Email);
                 return Problem(
                     statusCode: StatusCodes.Status401Unauthorized,
                     title: "Invalid email or password.",
@@ -109,6 +115,7 @@ namespace Mars.API.Controllers
             }
             var roles = await _userManager.GetRolesAsync(user);
             (string token, DateTime expiresAt) = _authService.CreateToken(user, roles);
+            _logger.LogInformation("User logged in successfully: {@Email}", user.Email);
             return Ok(new
             {
                 token,

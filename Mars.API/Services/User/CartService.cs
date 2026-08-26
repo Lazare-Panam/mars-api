@@ -48,6 +48,7 @@ namespace Mars.API.Services.User
             decimal? price = await _productVariantRepository.GetPriceAsync(addToCartRequest.SeriesId, addToCartRequest.VariantId);
             var item = new BasketItem
             {
+                SeriesId = addToCartRequest.SeriesId,
                 ProductId = addToCartRequest.VariantId,
                 ProductDescription = addToCartRequest.ProductDescription,
                 UnitPrice = price??0m,

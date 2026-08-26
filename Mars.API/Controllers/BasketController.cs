@@ -1,5 +1,8 @@
-﻿using Mars.API.Models.Basket;
+﻿using Mars.API.Models.Auth;
+using Mars.API.Models.Basket;
 using Mars.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
@@ -12,10 +15,14 @@ namespace Mars.API.Controllers
     {
         private readonly ILogger<BasketController> _logger;
         private readonly ICartService _cartService;
-        public BasketController(ILogger<BasketController> logger, ICartService cartService)
+        private readonly IRfqService _rfqService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        public BasketController(ILogger<BasketController> logger, ICartService cartService, IRfqService rfqService, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _cartService = cartService;
+            _rfqService = rfqService;
+            _userManager = userManager;
         }
         private string? GetUserId()
         {
@@ -99,6 +106,48 @@ namespace Mars.API.Controllers
             var removed = await _cartService.RemoveItemAsync(userId, sessionId, productId);
             _logger.LogInformation("Item removal result for userId: {@UserId}, sessionId: {@SessionId}, productId: {@ProductId}: {@Removed}", userId, sessionId, productId, removed);
             return removed ? NoContent() : NotFound();
+        }
+
+        [HttpPost("submit-for-quote")]
+        [Authorize]
+        public async Task<IActionResult> SubmitForQuote()
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var sessionId = GetSessionId();
+            var basket = await _cartService.GetBasketAsync(userId, sessionId);
+            if (basket is null || basket.Items.Count == 0)
+            {
+                _logger.LogInformation("Attempted to submit for quote with an empty or missing basket for userId: {@UserId}", userId);
+                return BadRequest("Your basket is empty.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null)
+            {
+                return Unauthorized();
+            }
+
+            var request = new CreateRfqRequest
+            {
+                LineItems = basket.Items.Select(item => new CreateRfqLineItem
+                {
+                    SeriesId = item.SeriesId,
+                    ProductId = item.ProductId,
+                    ProductDescription = item.ProductDescription,
+                    Quantity = item.Quantity,
+                    PictureUrl = item.PictureUrl
+                }).ToList()
+            };
+
+            var rfq = await _rfqService.CreateRfq(userId, $"{user.FirstName} {user.LastName}", user.Email, user.CompanyName, request);
+            await _cartService.DeleteBasketAsync(userId, sessionId);
+            _logger.LogInformation("Basket submitted for quote as {@QuoteRequestId} for userId: {@UserId}", rfq.QuoteRequestId, userId);
+            return Ok(rfq);
         }
 
         [HttpDelete]

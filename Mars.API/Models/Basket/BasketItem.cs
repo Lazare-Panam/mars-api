@@ -6,6 +6,7 @@ namespace Mars.API.Models.Basket
     public class BasketItem : IValidatableObject
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string SeriesId { get; set; }
         public string ProductId { get; set; }
         public string ProductDescription { get; set; }
         public decimal UnitPrice { get; set; }

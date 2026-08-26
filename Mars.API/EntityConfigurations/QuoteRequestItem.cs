@@ -22,6 +22,9 @@ namespace Mars.API.EntityConfigurations
                 .HasMaxLength(500)
                 .IsRequired();
 
+            builder.Property(qri => qri.UnitPrice)
+                .HasColumnType("decimal(18,2)");
+
             builder.Property(qri => qri.Quantity)
                 .IsRequired();
 

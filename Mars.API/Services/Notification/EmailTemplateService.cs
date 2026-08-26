@@ -181,6 +181,7 @@ namespace Mars.API.Services.Notification
                 rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px;\">{WebUtility.HtmlEncode(item.ProductId)}</td>");
                 rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px;\">{WebUtility.HtmlEncode(item.ProductDescription)}</td>");
                 rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px; text-align:right;\">{item.Quantity}</td>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px; text-align:right;\">{(item.UnitPrice.HasValue ? item.UnitPrice.Value.ToString("C2") : "POA")}</td>");
                 rows.Append("</tr>");
             }
             return rows.ToString();

@@ -4,7 +4,6 @@
         string SeriesId,
         string VariantId,
         string ProductDescription,
-   
         int Quantity,
         string PictureUrl
     );

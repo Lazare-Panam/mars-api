@@ -17,12 +17,16 @@ namespace Mars.API.Repository.SQL
         public DbSet<CustomerBasket> CustomerBaskets => Set<CustomerBasket>();
         public DbSet<BasketItem> BasketItems => Set<BasketItem>();
         public DbSet<Enquiry> Enquiry => Set<Enquiry>();
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        public DbSet<QuoteRequest> QuoteRequests => Set<QuoteRequest>();
+        public DbSet<QuoteRequestItem> QuoteRequestItems => Set<QuoteRequestItem>();    
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfiguration(new CustomerBasketConfiguration());
-            modelBuilder.ApplyConfiguration(new BasketItemConfiguration());
-            modelBuilder.ApplyConfiguration(new EnquiryConfiguration());
+            base.OnModelCreating(builder);
+            builder.ApplyConfiguration(new CustomerBasketConfiguration());
+            builder.ApplyConfiguration(new BasketItemConfiguration());
+            builder.ApplyConfiguration(new EnquiryConfiguration());
+            builder.ApplyConfiguration(new QuoteRequestConfiguration());
+            builder.ApplyConfiguration(new QuoteRequestItemConfiguration());
         }
     }
 }

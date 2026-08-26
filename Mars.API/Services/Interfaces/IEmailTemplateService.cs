@@ -1,4 +1,6 @@
-﻿namespace Mars.API.Services.Interfaces
+﻿using Mars.API.Models.Basket;
+
+namespace Mars.API.Services.Interfaces
 {
     public interface IEmailTemplateService
     {
@@ -25,5 +27,30 @@
         /// </summary>
         /// <returns>Rendered HTML with the registration details substituted into the template.</returns>
         string GetRegistrationInternalHtml(string userName, string userCompany, string userEmail, string userCountry, string userJobTitle, string registrationDate);
+
+        /// <summary>
+        /// Builds the HTML body for the receipt email sent back to the customer who submitted a quote request.
+        /// </summary>
+        /// <returns>Rendered HTML with the quote request details substituted into the template.</returns>
+        string GetRfqReceiptHtml(string userName, string userCompany, string userEmail, string quoteRequestId, IEnumerable<QuoteRequestItem> items);
+
+        /// <summary>
+        /// Builds the HTML body for the internal notification email alerting staff to a new quote request.
+        /// </summary>
+        /// <returns>Rendered HTML with the quote request details substituted into the template.</returns>
+        string GetRfqInternalHtml(string userName, string userCompany, string userEmail, string quoteRequestId, IEnumerable<QuoteRequestItem> items);
+
+        /// <summary>
+        /// Builds the HTML body for the order confirmation email sent to the customer, asking them
+        /// to send their Purchase Order (PO) referencing the order number.
+        /// </summary>
+        /// <returns>Rendered HTML with the order details substituted into the template.</returns>
+        string GetOrderConfirmationHtml(string userName, string userCompany, string userEmail, string orderId, IEnumerable<BasketItem> items, decimal orderTotal, string internalAddressEmail);
+
+        /// <summary>
+        /// Builds the HTML body for the internal notification email alerting staff to a new order awaiting a PO.
+        /// </summary>
+        /// <returns>Rendered HTML with the order details substituted into the template.</returns>
+        string GetOrderInternalHtml(string userName, string userCompany, string userEmail, string orderId, IEnumerable<BasketItem> items, decimal orderTotal);
     }
 }

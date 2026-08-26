@@ -13,6 +13,10 @@
   <ItemGroup>
     <None Remove="EmailTemplates\InternalNewEnquiry.html" />
     <None Remove="EmailTemplates\NewEnquiry.html" />
+    <None Remove="EmailTemplates\InternalNewRfqRequest.html" />
+    <None Remove="EmailTemplates\NewRfqRequest.html" />
+    <None Remove="EmailTemplates\InternalNewOrder.html" />
+    <None Remove="EmailTemplates\NewOrderConfirmation.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +24,18 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="EmailTemplates\NewEnquiry.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EmailTemplates\InternalNewRfqRequest.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EmailTemplates\NewRfqRequest.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EmailTemplates\InternalNewOrder.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EmailTemplates\NewOrderConfirmation.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

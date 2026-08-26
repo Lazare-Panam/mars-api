@@ -1,6 +1,9 @@
 ﻿
+using Mars.API.Models.Basket;
 using Mars.API.Services.Interfaces;
+using System.Net;
 using System.Reflection;
+using System.Text;
 
 namespace Mars.API.Services.Notification
 {
@@ -126,6 +129,121 @@ namespace Mars.API.Services.Notification
                 { "{{RegistrationDate}}", registrationDate },
             };
             return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
+        /// Builds the HTML body for the receipt email sent back to the customer who submitted a quote request.
+        /// </summary>
+        /// <returns>Rendered HTML with the quote request details substituted into the template.</returns>
+        public string GetRfqReceiptHtml(string userName, string userCompany, string userEmail, string quoteRequestId, IEnumerable<QuoteRequestItem> items)
+        {
+            string htmlContent = LoadTemplate("NewRfqRequest.html");
+            var replacements = new Dictionary<string, string>
+            {
+                { "{{UserName}}", userName },
+                { "{{UserCompany}}", userCompany ?? "Not Provided" },
+                { "{{UserEmail}}", userEmail },
+                { "{{QuoteRequestId}}", quoteRequestId },
+                { "{{ItemRows}}", BuildItemRowsHtml(items) },
+            };
+            return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
+        /// Builds the HTML body for the internal notification email alerting staff to a new quote request.
+        /// </summary>
+        /// <returns>Rendered HTML with the quote request details substituted into the template.</returns>
+        public string GetRfqInternalHtml(string userName, string userCompany, string userEmail, string quoteRequestId, IEnumerable<QuoteRequestItem> items)
+        {
+            string htmlContent = LoadTemplate("InternalNewRfqRequest.html");
+            var replacements = new Dictionary<string, string>
+            {
+                { "{{UserName}}", userName },
+                { "{{UserCompany}}", userCompany ?? "Not Provided" },
+                { "{{UserEmail}}", userEmail },
+                { "{{QuoteRequestId}}", quoteRequestId },
+                { "{{ItemRows}}", BuildItemRowsHtml(items) },
+            };
+            return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
+        /// Renders one HTML table row per quote request item. Product identifiers and descriptions come
+        /// from the catalog, not the current request, but are still HTML-encoded before being embedded in
+        /// the email body since this content is not otherwise validated as safe markup.
+        /// </summary>
+        private static string BuildItemRowsHtml(IEnumerable<QuoteRequestItem> items)
+        {
+            var rows = new StringBuilder();
+            foreach (var item in items)
+            {
+                rows.Append("<tr>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px;\">{WebUtility.HtmlEncode(item.ProductId)}</td>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px;\">{WebUtility.HtmlEncode(item.ProductDescription)}</td>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px; text-align:right;\">{item.Quantity}</td>");
+                rows.Append("</tr>");
+            }
+            return rows.ToString();
+        }
+
+        /// <summary>
+        /// Builds the HTML body for the order confirmation email sent to the customer, asking them
+        /// to send their Purchase Order (PO) referencing the order number.
+        /// </summary>
+        /// <returns>Rendered HTML with the order details substituted into the template.</returns>
+        public string GetOrderConfirmationHtml(string userName, string userCompany, string userEmail, string orderId, IEnumerable<BasketItem> items, decimal orderTotal, string internalAddressEmail)
+        {
+            string htmlContent = LoadTemplate("NewOrderConfirmation.html");
+            var replacements = new Dictionary<string, string>
+            {
+                { "{{UserName}}", userName },
+                { "{{UserCompany}}", userCompany ?? "Not Provided" },
+                { "{{UserEmail}}", userEmail },
+                { "{{OrderId}}", orderId },
+                { "{{ItemRows}}", BuildOrderItemRowsHtml(items) },
+                { "{{OrderTotal}}", orderTotal.ToString("C2") },
+                { "{{InternalAddressEmail}}", internalAddressEmail },
+            };
+            return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
+        /// Builds the HTML body for the internal notification email alerting staff to a new order awaiting a PO.
+        /// </summary>
+        /// <returns>Rendered HTML with the order details substituted into the template.</returns>
+        public string GetOrderInternalHtml(string userName, string userCompany, string userEmail, string orderId, IEnumerable<BasketItem> items, decimal orderTotal)
+        {
+            string htmlContent = LoadTemplate("InternalNewOrder.html");
+            var replacements = new Dictionary<string, string>
+            {
+                { "{{UserName}}", userName },
+                { "{{UserCompany}}", userCompany ?? "Not Provided" },
+                { "{{UserEmail}}", userEmail },
+                { "{{OrderId}}", orderId },
+                { "{{ItemRows}}", BuildOrderItemRowsHtml(items) },
+                { "{{OrderTotal}}", orderTotal.ToString("C2") },
+            };
+            return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
+        /// Renders one HTML table row per basket item, including unit price. Product identifiers and
+        /// descriptions are HTML-encoded before being embedded in the email body since this content is
+        /// not otherwise validated as safe markup.
+        /// </summary>
+        private static string BuildOrderItemRowsHtml(IEnumerable<BasketItem> items)
+        {
+            var rows = new StringBuilder();
+            foreach (var item in items)
+            {
+                rows.Append("<tr>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px;\">{WebUtility.HtmlEncode(item.ProductId)}</td>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px;\">{WebUtility.HtmlEncode(item.ProductDescription)}</td>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px; text-align:right;\">{item.Quantity}</td>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px; text-align:right;\">{item.UnitPrice:C2}</td>");
+                rows.Append("</tr>");
+            }
+            return rows.ToString();
         }
     }
 }

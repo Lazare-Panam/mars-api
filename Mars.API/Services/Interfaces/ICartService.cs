@@ -18,7 +18,7 @@ namespace Mars.API.Services.Interfaces
         /// </summary>
         /// <param name="userId">The authenticated user's id, or <c>null</c> for an anonymous/session-based basket.</param>
         /// <param name="sessionId">The anonymous session id, used when <paramref name="userId"/> is <c>null</c>.</param>
-        /// <param name="item">The variant, quantity, and display details to add to the basket.</param>
+        /// <param name="addToCartRequest">The variant, quantity, and display details to add to the basket.</param>
         /// <returns>The updated basket.</returns>
         Task<CustomerBasket> AddOrUpdate(string? userId, string sessionId, AddToCartRequest addToCartRequest);
 

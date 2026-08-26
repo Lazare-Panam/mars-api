@@ -135,8 +135,8 @@ namespace Mars.API.Services.User
             }
 
             basket.UpdatedAt = DateTimeOffset.UtcNow;
-            _logger.LogInformation("Basket {@BasketId} updated for user {@UserId}", basket.CustomerBasketId, userId ?? "anonymous");
             await _context.SaveChangesAsync();
+            _logger.LogInformation("Basket {@BasketId} updated for user {@UserId}", basket.CustomerBasketId, userId ?? "anonymous");
             return basket;
         }
 
@@ -163,8 +163,8 @@ namespace Mars.API.Services.User
             basket.Items.Remove(item);
             _context.BasketItems.Remove(item);
             basket.UpdatedAt = DateTimeOffset.UtcNow;
-            _logger.LogInformation("Removed item {@ProductId} from basket {@BasketId} for user {@UserId}", productId, basket.CustomerBasketId, userId ?? "anonymous");
             await _context.SaveChangesAsync();
+            _logger.LogInformation("Removed item {@ProductId} from basket {@BasketId} for user {@UserId}", productId, basket.CustomerBasketId, userId ?? "anonymous");
             return true;
         }
 
@@ -183,10 +183,10 @@ namespace Mars.API.Services.User
             {
                 _logger.LogInformation("No basket found for UserId {@UserId} or SessionId {@SessionId}", userId ?? "anonymous", sessionId);
                 return false;
-            } 
-            _logger.LogInformation("Deleting basket {@BasketId} for user {@UserId}", basket.CustomerBasketId, userId ?? "anonymous");
-            _context.CustomerBaskets.Remove(basket); 
+            }
+            _context.CustomerBaskets.Remove(basket);
             await _context.SaveChangesAsync();
+            _logger.LogInformation("Deleting basket {@BasketId} for user {@UserId}", basket.CustomerBasketId, userId ?? "anonymous");
             return true;
         }
     }

@@ -19,7 +19,6 @@ namespace Mars.API.Services.Notification
         {
 
             string htmlContent = LoadTemplate("NewEnquiry.html");
-            _logger.LogInformation("Loaded enquiry receipt template for user {@UserEmail}", userEmail);
             var replacements = new Dictionary<string, string>
             {
                 { "{{UserName}}", userName },
@@ -38,7 +37,6 @@ namespace Mars.API.Services.Notification
         public string GetEnquiryInternalHtml(string userName, string userCompany, string userEmail, string userCountry, string enquiryMessage)
         {
             string htmlContent = LoadTemplate("InternalNewEnquiry.html");
-            _logger.LogInformation("Loaded internal enquiry notification template for user {@UserEmail}", userEmail);
             var replacements = new Dictionary<string, string>
             {
                 { "{{UserName}}", userName },
@@ -102,7 +100,6 @@ namespace Mars.API.Services.Notification
         public string GetRegistrationWelcomeHtml(string userName, string userEmail, string userCompany)
         {
             string htmlContent = LoadTemplate("NewRegistration.html");
-            _logger.LogInformation("Loaded registration welcome template for user {@UserEmail}", userEmail);
             var replacements = new Dictionary<string, string>
             {
                 { "{{UserName}}", userName },
@@ -119,7 +116,6 @@ namespace Mars.API.Services.Notification
         public string GetRegistrationInternalHtml(string userName, string userCompany, string userEmail, string userCountry, string userJobTitle, string registrationDate)
         {
             string htmlContent = LoadTemplate("NewRegistrationInternal.html");
-            _logger.LogInformation("Loaded internal registration notification template for user {@UserEmail}", userEmail);
             var replacements = new Dictionary<string, string>
             {
                 { "{{UserName}}", userName },

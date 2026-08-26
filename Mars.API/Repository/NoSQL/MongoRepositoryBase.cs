@@ -22,7 +22,7 @@ namespace Mars.API.Repository.NoSQL
             }
             catch (OperationCanceledException ex)
             {
-                _logger.LogWarning(ex, "Operation Cancelled for {EntityType} {Id}", typeof(T).Name, id);
+                _logger.LogDebug(ex, "Operation Cancelled for {EntityType} {Id}", typeof(T).Name, id);
                 throw;
             }
             catch (MongoException ex)

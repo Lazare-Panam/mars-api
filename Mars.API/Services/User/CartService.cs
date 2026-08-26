@@ -72,28 +72,27 @@ namespace Mars.API.Services.User
                 if(userId == null)
                     basket = new CustomerBasket { SessionId = sessionId };
                 else 
-                basket = new CustomerBasket(userId) { SessionId = sessionId };
+                    basket = new CustomerBasket(userId) { SessionId = sessionId };
                 _context.CustomerBaskets.Add(basket);
+                _logger.LogInformation("No existing basket found for UserId {@UserId} or SessionId {@SessionId}; creating new basket", userId ?? "anonymous", sessionId);
             }
             var existingItem = basket.Items.FirstOrDefault(i => i.ProductId == item.ProductId);
-
             if (existingItem is not null)
             {
+                _logger.LogInformation("Item {@ProductId} already in basket {@BasketId}; incrementing quantity from {@OldQuantity} to {@NewQuantity}", item.ProductId, basket.CustomerBasketId, existingItem.Quantity, existingItem.Quantity + item.Quantity);
                 existingItem.Quantity += item.Quantity;
-                existingItem.UnitPrice = item.UnitPrice; 
+                existingItem.UnitPrice = item.UnitPrice;
             }
             else
             {
+                _logger.LogInformation("Item {@ProductId} not in basket {@BasketId}; adding as new item with quantity {@Quantity}", item.ProductId, basket.CustomerBasketId, item.Quantity);
                 item.CustomerBasketId = basket.CustomerBasketId;
                 basket.Items.Add(item);
             }
 
             basket.UpdatedAt = DateTimeOffset.UtcNow;
-
             await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Basket {BasketId} updated for user {UserId}, product {VariantId}",basket.CustomerBasketId, userId, item.ProductId);
-
+            _logger.LogInformation("Basket {@BasketId} updated for user {@UserId}, product {@VariantId}",basket.CustomerBasketId, userId, item.ProductId);
             return basket;
         }
         /// <summary>
@@ -110,23 +109,34 @@ namespace Mars.API.Services.User
                 ? await _context.CustomerBaskets.Include(b => b.Items).FirstOrDefaultAsync(b => b.UserId == userId)
                 : await _context.CustomerBaskets.Include(b => b.Items).FirstOrDefaultAsync(b => b.SessionId == sessionId);
 
-            if (basket is null) return null;
+            if (basket is null)
+            {
+                _logger.LogInformation("No basket found for UserId {@UserId} or SessionId {@SessionId}", userId ?? "anonymous", sessionId);
+                return null;
+            } 
 
             var item = basket.Items.FirstOrDefault(i => i.ProductId == productId);
-            if (item is null) return null;
+            if (item is null)
+            { 
+                _logger.LogInformation("No matching item found for UserId {@UserId} or SessionId {@SessionId}", userId ?? "anonymous", sessionId);
+                return null;
+            }
 
             if (quantity <= 0)
             {
                 basket.Items.Remove(item);
+                _logger.LogInformation("Removing item {@ProductId} from basket {@BasketId} for user {@UserId}", productId, basket.CustomerBasketId, userId ?? "anonymous");
                 _context.BasketItems.Remove(item);
             }
             else
             {
+                _logger.LogInformation("Updating item {@ProductId} quantity to {@Quantity} in basket {@BasketId} for user {@UserId}", productId, quantity, basket.CustomerBasketId, userId ?? "anonymous");
                 item.Quantity = quantity;
             }
 
             basket.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
+            _logger.LogInformation("Basket {@BasketId} updated for user {@UserId}", basket.CustomerBasketId, userId ?? "anonymous");
             return basket;
         }
 
@@ -144,13 +154,17 @@ namespace Mars.API.Services.User
                 : await _context.CustomerBaskets.Include(b => b.Items).FirstOrDefaultAsync(b => b.SessionId == sessionId);
 
             var item = basket?.Items.FirstOrDefault(i => i.ProductId == productId);
-            if (basket is null || item is null) return false;
-
+            if (basket is null || item is null)
+            {
+                _logger.LogInformation("No basket or matching item found for UserId {@UserId} or SessionId {@SessionId}", userId ?? "anonymous", sessionId);
+                return false;
+            }
+            _logger.LogInformation("Basket found for UserId {@UserId} or SessionId {@SessionId}", userId ?? "anonymous", sessionId);
             basket.Items.Remove(item);
             _context.BasketItems.Remove(item);
             basket.UpdatedAt = DateTimeOffset.UtcNow;
-
             await _context.SaveChangesAsync();
+            _logger.LogInformation("Removed item {@ProductId} from basket {@BasketId} for user {@UserId}", productId, basket.CustomerBasketId, userId ?? "anonymous");
             return true;
         }
 
@@ -165,11 +179,14 @@ namespace Mars.API.Services.User
             var basket = !string.IsNullOrEmpty(userId)
                 ? await _context.CustomerBaskets.FirstOrDefaultAsync(b => b.UserId == userId)
                 : await _context.CustomerBaskets.FirstOrDefaultAsync(b => b.SessionId == sessionId);
-
-            if (basket is null) return false;
-
-            _context.CustomerBaskets.Remove(basket); // cascade deletes items
+            if (basket is null)
+            {
+                _logger.LogInformation("No basket found for UserId {@UserId} or SessionId {@SessionId}", userId ?? "anonymous", sessionId);
+                return false;
+            }
+            _context.CustomerBaskets.Remove(basket);
             await _context.SaveChangesAsync();
+            _logger.LogInformation("Deleting basket {@BasketId} for user {@UserId}", basket.CustomerBasketId, userId ?? "anonymous");
             return true;
         }
     }

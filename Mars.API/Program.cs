@@ -24,13 +24,15 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using System.Text;
+using Serilog;
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSerilog((services, lc) => lc
+        .ReadFrom.Configuration(builder.Configuration)
+        .ReadFrom.Services(services));
 builder.Services.AddApplicationInsightsTelemetry();
-builder.Services.AddLogging(log => 
-{
-    log.AddApplicationInsights();
-    log.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information);
-});
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -110,17 +112,24 @@ builder.Services.AddAuthentication(options =>
         OnMessageReceived = context =>
         {
             var header = context.Request.Headers.Authorization.ToString();
-            Console.WriteLine($"[JWT] Authorization header: '{(string.IsNullOrEmpty(header) ? "(none)" : header)}'");
+            if (string.IsNullOrEmpty(header))
+            {
+                Log.Information("No JWT Authorization header attached");
+            }
+            else 
+            {
+                Log.Information("JWT Authorization header attached");
+            }
             return Task.CompletedTask;
         },
         OnAuthenticationFailed = context =>
         {
-            Console.WriteLine($"[JWT] FAILED: {context.Exception.GetType().Name} - {context.Exception.Message}");
+            Log.Error(context.Exception, "JWT Authentication failed");
             return Task.CompletedTask;
         },
         OnTokenValidated = context =>
         {
-            Console.WriteLine($"[JWT] Validated OK. Claims: {string.Join(", ", context.Principal?.Claims.Select(c => $"{c.Type}={c.Value}") ?? Enumerable.Empty<string>())}");
+            Log.Information("JWT Token claims attached");
             return Task.CompletedTask;
         }
     };

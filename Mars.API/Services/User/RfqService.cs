@@ -3,6 +3,7 @@ using Mars.API.Models.Basket;
 using Mars.API.Repository.Interfaces;
 using Mars.API.Repository.SQL;
 using Mars.API.Services.Interfaces;
+using System.Linq;
 namespace Mars.API.Services.User
 {
     public class RfqService : IRfqService
@@ -21,10 +22,13 @@ namespace Mars.API.Services.User
         }
         public async Task<QuoteRequest> CreateRfq(string userId, string userName, string userEmail, string userCompany, CreateRfqRequest request)
         {
+            var priceKeys = request.LineItems.Select(i => (i.SeriesId, i.ProductId));
+            var prices = await _productVariantRepository.GetPricesAsync(priceKeys);
+
             var items = new List<QuoteRequestItem>();
             foreach (var item in request.LineItems)
             {
-                decimal? price = await _productVariantRepository.GetPriceAsync(item.SeriesId, item.ProductId);
+                prices.TryGetValue((item.SeriesId, item.ProductId), out var price);
                 items.Add(new QuoteRequestItem
                 {
                     ProductId = item.ProductId,
@@ -50,5 +54,6 @@ namespace Mars.API.Services.User
             await _notificationService.HandleNewRfqSubmittedAsync(userName, userEmail, userCompany, rfq.QuoteRequestId, rfq.Items);
             return rfq;
         }
+       
     }
 }

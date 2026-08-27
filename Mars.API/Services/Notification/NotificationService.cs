@@ -145,57 +145,6 @@ namespace Mars.API.Services.Notification
             var body = _templateService.GetRfqInternalHtml(userName, userCompany, userEmail, quoteRequestId, items);
             await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"New Quote Request from {userCompany}", body);
         }
-
-        /// <summary>
-        /// Sends the order confirmation email (asking the customer to send their PO) and the internal
-        /// staff notification email for a newly submitted order.
-        /// Each email is sent independently, so a failure sending one does not prevent the other.
-        /// </summary>
-        /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
-        public async Task<NotificationResult> HandleOrderSubmittedAsync(string userName, string userEmail, string userCompany, string orderId, IEnumerable<BasketItem> items, decimal orderTotal)
-        {
-            var result = new NotificationResult();
-            try
-            {
-                await SendOrderConfirmationAsync(userName, userEmail, userCompany, orderId, items, orderTotal);
-                result.ReceiptSent = true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send order confirmation to {Email}", userEmail);
-            }
-
-            try
-            {
-                await SendOrderInternalNotificationAsync(userName, userEmail, userCompany, orderId, items, orderTotal);
-                result.InternalNotificationSent = true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send internal order notification for {Company}", userCompany);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Renders and sends the order confirmation email to the customer, asking them to send their PO.
-        /// </summary>
-        private async Task SendOrderConfirmationAsync(string userName, string userEmail, string userCompany, string orderId, IEnumerable<BasketItem> items, decimal orderTotal)
-        {
-            var body = _templateService.GetOrderConfirmationHtml(userName, userCompany, userEmail, orderId, items, orderTotal, _emailSettings.InternalAddressEmail);
-            await _emailService.SendEmailAsync(userEmail, $"Order Submitted: {orderId}", body);
-        }
-
-        /// <summary>
-        /// Renders and sends the internal staff notification email for a new order,
-        /// to the address configured in <see cref="EmailSettings.InternalAddressEmail"/>.
-        /// </summary>
-        private async Task SendOrderInternalNotificationAsync(string userName, string userEmail, string userCompany, string orderId, IEnumerable<BasketItem> items, decimal orderTotal)
-        {
-            var body = _templateService.GetOrderInternalHtml(userName, userCompany, userEmail, orderId, items, orderTotal);
-            await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"New Order Awaiting PO: {orderId}", body);
-        }
-
         /// <summary>
         /// Renders and sends the receipt email back to the customer who submitted an enquiry.
         /// </summary>

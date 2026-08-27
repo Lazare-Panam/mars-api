@@ -1,11 +1,8 @@
-﻿using Azure.Core;
+﻿
 using Mars.API.Models.Basket;
 using Mars.API.Repository.Interfaces;
-using Mars.API.Repository.NoSQL;
 using Mars.API.Repository.SQL;
 using Mars.API.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
-
 namespace Mars.API.Services.User
 {
     public class RfqService : IRfqService

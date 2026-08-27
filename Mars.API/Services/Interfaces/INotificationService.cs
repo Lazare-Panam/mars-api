@@ -25,13 +25,5 @@ namespace Mars.API.Services.Interfaces
         /// </summary>
         /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
         Task<NotificationResult> HandleNewRfqSubmittedAsync(string userName, string userEmail, string userCompany, string quoteRequestId, IEnumerable<QuoteRequestItem> items);
-
-        /// <summary>
-        /// Sends the order confirmation email (asking the customer to send their PO) and the internal
-        /// staff notification email for a newly submitted order.
-        /// Each email is sent independently, so a failure sending one does not prevent the other.
-        /// </summary>
-        /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
-        Task<NotificationResult> HandleOrderSubmittedAsync(string userName, string userEmail, string userCompany, string orderId, IEnumerable<BasketItem> items, decimal orderTotal);
     }
 }

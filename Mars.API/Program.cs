@@ -25,6 +25,7 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using System.Text;
 using Serilog;
+using FluentValidation;
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
@@ -74,6 +75,7 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
 });
 builder.Services.AddOptions<EmailSettings>().Bind(builder.Configuration.GetSection(nameof(EmailSettings)));
 var emailConnectionString = builder.Configuration["EmailSettings:ConnectionString"];
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddSingleton(new EmailClient(emailConnectionString));
 builder.Services.AddScoped<INoSQLRepository<ProductCatalog>, ProductCatalogRepository>();
 builder.Services.AddScoped<INoSQLRepository<ProductDetail>, ProductDetailRepository>();

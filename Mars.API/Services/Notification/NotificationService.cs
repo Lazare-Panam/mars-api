@@ -1,4 +1,5 @@
-﻿using Mars.API.Models.User;
+﻿using Mars.API.Models.Basket;
+using Mars.API.Models.User;
 using Mars.API.Repository.Interfaces;
 using Mars.API.Services.Interfaces;
 using Mars.API.Settings;
@@ -95,6 +96,54 @@ namespace Mars.API.Services.Notification
         {
             var body = _templateService.GetRegistrationInternalHtml(userName, userCompany, userEmail, userCountry, userJobTitle, registrationDate);
             await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"New User Registered: {userCompany}", body);
+        }
+        /// <summary>
+        /// Sends the customer receipt and internal staff notification emails for a new quote request.
+        /// Each email is sent independently, so a failure sending one does not prevent the other.
+        /// </summary>
+        /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
+        public async Task<NotificationResult> HandleNewRfqSubmittedAsync(string userName, string userEmail, string userCompany, string quoteRequestId, IEnumerable<QuoteRequestItem> items)
+        {
+            var result = new NotificationResult();
+            try
+            {
+                await SendRfqReceiptAsync(userName, userEmail, userCompany, quoteRequestId, items);
+                result.ReceiptSent = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send quote request receipt to {Email}", userEmail);
+            }
+
+            try
+            {
+                await SendRfqInternalNotificationAsync(userName, userEmail, userCompany, quoteRequestId, items);
+                result.InternalNotificationSent = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send internal quote request notification for {Company}", userCompany);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Renders and sends the receipt email back to the customer who submitted a quote request.
+        /// </summary>
+        private async Task SendRfqReceiptAsync(string userName, string userEmail, string userCompany, string quoteRequestId, IEnumerable<QuoteRequestItem> items)
+        {
+            var body = _templateService.GetRfqReceiptHtml(userName, userCompany, userEmail, quoteRequestId, items);
+            await _emailService.SendEmailAsync(userEmail, "We've received your quote request", body);
+        }
+
+        /// <summary>
+        /// Renders and sends the internal staff notification email for a new quote request,
+        /// to the address configured in <see cref="EmailSettings.InternalAddressEmail"/>.
+        /// </summary>
+        private async Task SendRfqInternalNotificationAsync(string userName, string userEmail, string userCompany, string quoteRequestId, IEnumerable<QuoteRequestItem> items)
+        {
+            var body = _templateService.GetRfqInternalHtml(userName, userCompany, userEmail, quoteRequestId, items);
+            await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"New Quote Request from {userCompany}", body);
         }
         /// <summary>
         /// Renders and sends the receipt email back to the customer who submitted an enquiry.

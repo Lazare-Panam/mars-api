@@ -1,4 +1,5 @@
-﻿using Mars.API.Models.User;
+﻿using Mars.API.Models.Basket;
+using Mars.API.Models.User;
 
 namespace Mars.API.Services.Interfaces
 {
@@ -17,5 +18,12 @@ namespace Mars.API.Services.Interfaces
         /// </summary>
         /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
         Task<NotificationResult> HandleNewUserRegisteredAsync(string userName, string userEmail, string userCompany, string userCountry, string userJobTitle, string registrationDate);
+
+        /// <summary>
+        /// Sends the customer receipt and internal staff notification emails for a new quote request.
+        /// Each email is sent independently, so a failure sending one does not prevent the other.
+        /// </summary>
+        /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
+        Task<NotificationResult> HandleNewRfqSubmittedAsync(string userName, string userEmail, string userCompany, string quoteRequestId, IEnumerable<QuoteRequestItem> items);
     }
 }

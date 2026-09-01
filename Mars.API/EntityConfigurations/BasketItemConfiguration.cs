@@ -14,6 +14,10 @@ namespace Mars.API.EntityConfigurations
                 .HasMaxLength(450)
                 .IsRequired();
 
+            builder.Property(bi => bi.SeriesId)
+                .HasMaxLength(100)
+                .IsRequired();
+
             builder.Property(bi => bi.ProductId)
                 .HasMaxLength(100)
                 .IsRequired();

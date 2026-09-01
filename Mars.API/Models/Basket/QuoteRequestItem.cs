@@ -1,20 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Mars.API.Models.Basket
 {
-    public class BasketItem : IValidatableObject
+    public class QuoteRequestItem : IValidatableObject
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string SeriesId { get; set; }
         public string ProductId { get; set; }
         public string ProductDescription { get; set; }
-        public decimal UnitPrice { get; set; }
+        public decimal? UnitPrice { get; set; }
         public int Quantity { get; set; }
         public string PictureUrl { get; set; }
-        public string CustomerBasketId { get; set; }
+        public string QuoteRequestId { get; set; }
         [JsonIgnore]
-        public CustomerBasket CustomerBasket { get; set; }
+        public QuoteRequest QuoteRequest { get; set; }
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             var results = new List<ValidationResult>();

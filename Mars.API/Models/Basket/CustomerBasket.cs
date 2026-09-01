@@ -10,7 +10,6 @@ namespace Mars.API.Models.Basket
         public List<BasketItem> Items { get; set; } = [];
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
-
         [NotMapped]
         public decimal TotalPrice => Items.Sum(item => item.UnitPrice * item.Quantity);
         public CustomerBasket() { }

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <body style="margin:0; padding:0; background-color:#FAF6F4; font-family: Arial, Helvetica, sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF6F4; padding: 30px 0;">
@@ -9,7 +9,7 @@
                     <tr>
                         <td style="background-color:#E7390F; padding: 24px 32px;">
                             <span style="color:#ffffff; font-size:20px; font-weight:bold;">Mars Valve UK</span><br>
-                            <span style="color:#F2A78F; font-size:13px;">Your Enquiry, Received</span>
+                            <span style="color:#F2A78F; font-size:13px;">Your Quote Request, Received</span>
                         </td>
                     </tr>
                     <!-- Body -->
@@ -19,35 +19,35 @@
                                 Hi {{UserName}},
                             </p>
                             <p style="color:#000000; font-size:16px; line-height:1.5; margin:0 0 16px;">
-                                Thanks for getting in touch with Mars Valve UK. We've received your enquiry and one of our team will be back to you shortly.
+                                Thanks for your quote request. One of our team will price up the items below and be in touch shortly.
                             </p>
 
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 20px;">
                                 <tr>
-                                    <td style="padding: 10px 0; border-bottom: 1px solid #F2A78F; color:#6B3424; font-size:13px; font-weight:bold; width:140px;">COMPANY</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #F2A78F; color:#6B3424; font-size:13px; font-weight:bold; width:140px;">REFERENCE</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #F2A78F; color:#000000; font-size:14px;">{{QuoteRequestId}}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #F2A78F; color:#6B3424; font-size:13px; font-weight:bold;">COMPANY</td>
                                     <td style="padding: 10px 0; border-bottom: 1px solid #F2A78F; color:#000000; font-size:14px;">{{UserCompany}}</td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 10px 0; border-bottom: 1px solid #F2A78F; color:#6B3424; font-size:13px; font-weight:bold;">EMAIL</td>
-                                    <td style="padding: 10px 0; border-bottom: 1px solid #F2A78F; color:#000000; font-size:14px;">{{UserEmail}}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 0; color:#6B3424; font-size:13px; font-weight:bold;">LOCATION</td>
-                                    <td style="padding: 10px 0; color:#000000; font-size:14px;">{{UserCountry}}</td>
+                                    <td style="padding: 10px 0; color:#6B3424; font-size:13px; font-weight:bold;">EMAIL</td>
+                                    <td style="padding: 10px 0; color:#000000; font-size:14px;">{{UserEmail}}</td>
                                 </tr>
                             </table>
 
                             <p style="color:#6B3424; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 8px; font-weight:bold;">
-                                Your message
+                                Items requested
                             </p>
-                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF6F4; border-radius:6px; margin: 0 0 24px;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; background-color:#FAF6F4; border-radius:6px; margin: 0 0 24px;">
                                 <tr>
-                                    <td style="padding: 20px;">
-                                        <p style="color:#000000; font-size:15px; line-height:1.5; margin:0;">
-                                            {{EnquiryMessage}}
-                                        </p>
-                                    </td>
+                                    <td style="padding: 10px 16px; color:#6B3424; font-size:12px; font-weight:bold;">PRODUCT</td>
+                                    <td style="padding: 10px 16px; color:#6B3424; font-size:12px; font-weight:bold;">DESCRIPTION</td>
+                                    <td style="padding: 10px 16px; color:#6B3424; font-size:12px; font-weight:bold; text-align:right;">QTY</td>
+                                    <td style="padding: 10px 16px; color:#6B3424; font-size:12px; font-weight:bold; text-align:right;">PRICE</td>
                                 </tr>
+                                {{ItemRows}}
                             </table>
                         </td>
                     </tr>
@@ -55,7 +55,7 @@
                     <tr>
                         <td style="padding: 24px 32px; border-top: 1px solid #F2A78F;">
                             <p style="color:#6B3424; font-size:13px; line-height:1.5; margin:0;">
-                                UK Mars Valve· Part of Valvenok Group
+                                UK Mars Valve · Part of Valvenok Group
                             </p>
                         </td>
                     </tr>

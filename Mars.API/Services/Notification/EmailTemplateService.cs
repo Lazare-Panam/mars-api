@@ -1,6 +1,9 @@
 ﻿
+using Mars.API.Models.Basket;
 using Mars.API.Services.Interfaces;
+using System.Net;
 using System.Reflection;
+using System.Text;
 
 namespace Mars.API.Services.Notification
 {
@@ -17,7 +20,6 @@ namespace Mars.API.Services.Notification
         /// <returns>Rendered HTML with the enquiry details substituted into the template.</returns>
         public string GetEnquiryReceiptHtml(string userName, string userCompany, string userEmail, string userCountry, string enquiryMessage)
         {
-
             string htmlContent = LoadTemplate("NewEnquiry.html");
             var replacements = new Dictionary<string, string>
             {
@@ -126,6 +128,62 @@ namespace Mars.API.Services.Notification
                 { "{{RegistrationDate}}", registrationDate },
             };
             return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
+        /// Builds the HTML body for the receipt email sent back to the customer who submitted a quote request.
+        /// </summary>
+        /// <returns>Rendered HTML with the quote request details substituted into the template.</returns>
+        public string GetRfqReceiptHtml(string userName, string userCompany, string userEmail, string quoteRequestId, IEnumerable<QuoteRequestItem> items)
+        {
+            string htmlContent = LoadTemplate("NewRfqRequest.html");
+            var replacements = new Dictionary<string, string>
+            {
+                { "{{UserName}}", userName },
+                { "{{UserCompany}}", userCompany ?? "Not Provided" },
+                { "{{UserEmail}}", userEmail },
+                { "{{QuoteRequestId}}", quoteRequestId },
+                { "{{ItemRows}}", BuildItemRowsHtml(items) },
+            };
+            return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
+        /// Builds the HTML body for the internal notification email alerting staff to a new quote request.
+        /// </summary>
+        /// <returns>Rendered HTML with the quote request details substituted into the template.</returns>
+        public string GetRfqInternalHtml(string userName, string userCompany, string userEmail, string quoteRequestId, IEnumerable<QuoteRequestItem> items)
+        {
+            string htmlContent = LoadTemplate("InternalNewRfqRequest.html");
+            var replacements = new Dictionary<string, string>
+            {
+                { "{{UserName}}", userName },
+                { "{{UserCompany}}", userCompany ?? "Not Provided" },
+                { "{{UserEmail}}", userEmail },
+                { "{{QuoteRequestId}}", quoteRequestId },
+                { "{{ItemRows}}", BuildItemRowsHtml(items) },
+            };
+            return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
+        /// Renders one HTML table row per quote request item. Product identifiers and descriptions come
+        /// from the catalog, not the current request, but are still HTML-encoded before being embedded in
+        /// the email body since this content is not otherwise validated as safe markup.
+        /// </summary>
+        private static string BuildItemRowsHtml(IEnumerable<QuoteRequestItem> items)
+        {
+            var rows = new StringBuilder();
+            foreach (var item in items)
+            {
+                rows.Append("<tr>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px;\">{WebUtility.HtmlEncode(item.ProductId)}</td>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px;\">{WebUtility.HtmlEncode(item.ProductDescription)}</td>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px; text-align:right;\">{item.Quantity}</td>");
+                rows.Append($"<td style=\"padding: 10px 16px; border-top: 1px solid #F2A78F; color:#000000; font-size:14px; text-align:right;\">{(item.UnitPrice.HasValue ? item.UnitPrice.Value.ToString("C2") : "POA")}</td>");
+                rows.Append("</tr>");
+            }
+            return rows.ToString();
         }
     }
 }

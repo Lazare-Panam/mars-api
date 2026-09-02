@@ -1,4 +1,5 @@
-﻿using Mars.API.MessageQueues;
+﻿using FluentValidation;
+using Mars.API.MessageQueues;
 using Mars.API.Models.Auth;
 using Mars.API.Models.User;
 using Mars.API.Repository.SQL;
@@ -6,6 +7,7 @@ using Mars.API.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mars.API.Controllers
 {
@@ -25,8 +27,17 @@ namespace Mars.API.Controllers
         }
 
         [HttpPost("enquiry")]
-        public async Task<IActionResult> UserEnquiry(EnquiryRequest enquiryRequest, CancellationToken cancellationToken)
+        public async Task<IActionResult> UserEnquiry(EnquiryRequest enquiryRequest, CancellationToken cancellationToken , IValidator<EnquiryRequest> validator)
         {
+            var validationResult = await validator.ValidateAsync(enquiryRequest, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+                return ValidationProblem(ModelState);
+            }
             _logger.LogInformation("Enquiry received for email {Email}", enquiryRequest.UserEmail);
 
             var enquiry = new Enquiry

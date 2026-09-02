@@ -3,6 +3,7 @@ using Mars.API.Models.Auth;
 using Mars.API.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mars.API.Controllers
 {
@@ -25,8 +26,18 @@ namespace Mars.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterUser(RegisterDTO registerDTO)
+        public async Task<IActionResult> RegisterUser(RegisterDTO registerDTO, IValidator<RegisterDTO> validator)
         {
+            var validationResult = await validator.ValidateAsync(registerDTO);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+                return ValidationProblem(ModelState);
+            }
+
             _logger.LogInformation("Register called for {@Email}", registerDTO.Email);
             var existingUser = await _userManager.FindByEmailAsync(registerDTO.Email);
 

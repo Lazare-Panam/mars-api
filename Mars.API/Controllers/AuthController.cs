@@ -1,7 +1,9 @@
-﻿using Mars.API.Models.Auth;
+﻿using FluentValidation;
+using Mars.API.Models.Auth;
 using Mars.API.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mars.API.Controllers
 {
@@ -24,8 +26,18 @@ namespace Mars.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterUser(RegisterDTO registerDTO)
+        public async Task<IActionResult> RegisterUser(RegisterDTO registerDTO, IValidator<RegisterDTO> validator)
         {
+            var validationResult = await validator.ValidateAsync(registerDTO);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+                return ValidationProblem(ModelState);
+            }
+
             _logger.LogInformation("Register called for {@Email}", registerDTO.Email);
             var existingUser = await _userManager.FindByEmailAsync(registerDTO.Email);
 
@@ -81,8 +93,18 @@ namespace Mars.API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        public async Task<IActionResult> Login(LoginDto dto, IValidator<LoginDto> validator)
         {
+            var validationResult = await validator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+                return ValidationProblem(ModelState);
+            }
+
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {

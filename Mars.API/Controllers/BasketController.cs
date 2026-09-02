@@ -88,8 +88,18 @@ namespace Mars.API.Controllers
         }
 
         [HttpPut("items/{productId}")]
-        public async Task<IActionResult> UpdateQuantity(string productId, [FromBody] UpdateQuantityRequest request)
+        public async Task<IActionResult> UpdateQuantity(string productId, [FromBody] UpdateQuantityRequest request, IValidator<UpdateQuantityRequest> validator)
         {
+            var validationResult = await validator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+                return ValidationProblem(ModelState);
+            }
+
             var userId = GetUserId();
             var sessionId = GetSessionId();
 

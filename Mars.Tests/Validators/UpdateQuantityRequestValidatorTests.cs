@@ -1,5 +1,6 @@
 ﻿using FluentValidation.TestHelper;
 using Mars.API.Models.Basket;
+using Mars.API.Models.ModelValidators;
 using System;
 using System.Collections.Generic;
 using System.Text;

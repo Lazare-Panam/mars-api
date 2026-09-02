@@ -1,4 +1,5 @@
-﻿using Mars.API.Models.Auth;
+﻿using FluentValidation;
+using Mars.API.Models.Auth;
 using Mars.API.Models.Basket;
 using Mars.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -66,12 +67,17 @@ namespace Mars.API.Controllers
         }
 
         [HttpPost("items")]
-        public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request, [FromServices] IValidator<AddToCartRequest> validator)
         {
-            if (request.Quantity < 1)
+            var validationResult = await validator.ValidateAsync(request);
+
+            if (!validationResult.IsValid)
             {
-                _logger.LogInformation("Attempted to add item with invalid quantity: {@Quantity}", request.Quantity);
-                return BadRequest("Quantity must be at least 1.");
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+                return ValidationProblem(ModelState);
             }
 
             var userId = GetUserId();
@@ -110,7 +116,7 @@ namespace Mars.API.Controllers
 
         [HttpPost("submit-for-quote")]
         [Authorize]
-        public async Task<IActionResult> SubmitForQuote()
+        public async Task<IActionResult> SubmitForQuote([FromServices] IValidator<CreateRfqRequest> validator)
         {
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
@@ -142,8 +148,17 @@ namespace Mars.API.Controllers
                     Quantity = item.Quantity,
                     PictureUrl = item.PictureUrl
                 }).ToList()
-            };
+            }; 
+            var validationResult = await validator.ValidateAsync(request);
 
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+                return ValidationProblem(ModelState);
+            }
             var rfq = await _rfqService.CreateRfq(userId, $"{user.FirstName} {user.LastName}", user.Email, user.CompanyName, request);
             await _cartService.DeleteBasketAsync(userId, sessionId);
             _logger.LogInformation("Basket submitted for quote as {@QuoteRequestId} for userId: {@UserId}", rfq.QuoteRequestId, userId);

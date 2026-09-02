@@ -1,4 +1,5 @@
-﻿using Mars.API.Models.Auth;
+﻿using FluentValidation;
+using Mars.API.Models.Auth;
 using Mars.API.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -81,8 +82,18 @@ namespace Mars.API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        public async Task<IActionResult> Login(LoginDto dto, IValidator<LoginDto> validator)
         {
+            var validationResult = await validator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+                return ValidationProblem(ModelState);
+            }
+
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {

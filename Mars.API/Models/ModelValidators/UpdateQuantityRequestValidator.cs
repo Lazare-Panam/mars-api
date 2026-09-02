@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Mars.Tests.Validators
+namespace Mars.API.Models.ModelValidators
 {
     public class UpdateQuantityRequestValidator : AbstractValidator<UpdateQuantityRequest>
     {

@@ -31,5 +31,36 @@ namespace Mars.Tests.Validators
 
             result.ShouldNotHaveValidationErrorFor(x => x.Quantity);
         }
+        [Fact]
+        public void SeriesId_Empty_HasValidationError()
+        {
+            var request = ValidRequest with { SeriesId = "" };
+            var result = _validator.TestValidate(request);
+            result.ShouldHaveValidationErrorFor(x => x.SeriesId);
+        }
+
+        [Fact]
+        public void VariantId_Empty_HasValidationError()
+        {
+            var request = ValidRequest with { VariantId = "" };
+            var result = _validator.TestValidate(request);
+            result.ShouldHaveValidationErrorFor(x => x.VariantId);
+        }
+
+        [Fact]
+        public void ProductDescription_ExceedsMaxLength_HasValidationError()
+        {
+            var request = ValidRequest with { ProductDescription = new string('a', 501) };
+            var result = _validator.TestValidate(request);
+            result.ShouldHaveValidationErrorFor(x => x.ProductDescription);
+        }
+
+        [Fact]
+        public void PictureUrl_NotAbsoluteUrl_HasValidationError()
+        {
+            var request = ValidRequest with { PictureUrl = "not-a-url" };
+            var result = _validator.TestValidate(request);
+            result.ShouldHaveValidationErrorFor(x => x.PictureUrl);
+        }
     }
 }

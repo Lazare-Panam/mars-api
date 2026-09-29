@@ -1,0 +1,73 @@
+name: Test and deploy mars-api
+
+# Pull requests: run the tests only.
+# Merges to main: run the tests, then build the image, push it to ACR
+# and roll the mars-api Container App onto it.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "Mars.API/**"
+      - "Mars.Tests/**"
+      - ".github/workflows/deploy-api.yml"
+  push:
+    branches: [main]
+    paths:
+      - "Mars.API/**"
+      - "Mars.Tests/**"
+      - ".github/workflows/deploy-api.yml"
+  workflow_dispatch:
+
+# Never run two deploys at once; a newer merge waits for the current one.
+concurrency:
+  group: deploy-mars-api-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: dimages.azurecr.io
+  IMAGE: dimages.azurecr.io/mars-api
+  CONTAINER_APP: mars-api
+  RESOURCE_GROUP: rg-panam-dev
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Run tests
+        run: dotnet test Mars.Tests --configuration Release
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and push image
+        run: |
+          az acr login --name dimages
+          docker build \
+            -t $IMAGE:${{ github.sha }} \
+            -t $IMAGE:latest \
+            Mars.API
+          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+
+      - name: Deploy to Container App
+        run: |
+          az extension add --name containerapp --upgrade --yes
+          az containerapp update \
+            --name $CONTAINER_APP \
+            --resource-group $RESOURCE_GROUP \
+            --image $IMAGE:${{ github.sha }}

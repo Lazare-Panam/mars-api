@@ -21,14 +21,12 @@ namespace Mars.API.Services.Interfaces
         Task<ProductDetail?> GetProductDetailAsync(string id, CancellationToken ct = default);
 
         /// <summary>
-        /// Retrieves the series variants for a product by id, applying pricing visibility rules
-        /// based on the caller's authentication status.
+        /// Retrieves the series variants for a product by id.
         /// </summary>
         /// <param name="id">The product/series id.</param>
-        /// <param name="isAuthenticated">Whether the current caller is authenticated; controls how much pricing is included.</param>
         /// <param name="ct">Cancellation token.</param>
         /// <returns>The matching <see cref="ProductSeriesVariants"/>, or <c>null</c> if <paramref name="id"/> is empty/whitespace or no variants are found.</returns>
-        Task<ProductSeriesVariants?> GetProductVariantsAsync(string id, bool isAuthenticated, CancellationToken ct = default);
+        Task<ProductSeriesVariants?> GetProductVariantsAsync(string id, CancellationToken ct = default);
         /// <summary>
         /// 
         /// Retrieves all stock products.

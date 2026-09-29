@@ -482,4 +482,4 @@ $RECYCLE.BIN/
 *.swp
 # App Settings
 appsettings.Development.json
-appsettings.json
+# appsettings.json holds non-secret defaults and is committed; secrets come from Container App env vars

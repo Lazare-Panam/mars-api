@@ -1,6 +1,7 @@
 using Azure.Communication.Email;
 using Azure.Identity;
 using Azure.Messaging.ServiceBus;
+using FluentValidation;
 using Mars.API.MessageQueues;
 using Mars.API.Models.Auth;
 using Mars.API.Models.Products;
@@ -23,13 +24,14 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
-using System.Text;
+using Polly;
+using Polly.Retry;
 using Serilog;
-using FluentValidation;
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
+using System.Text;
+Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddSerilog((services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
         .ReadFrom.Services(services));
@@ -87,6 +89,15 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStockProductRepository, StockProductRepository>();
 builder.Services.AddScoped<IRfqService, RfqService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddResiliencePipeline("azureServiceBus", builder =>
+{
+    builder.AddRetry(new RetryStrategyOptions 
+    {
+        MaxRetryAttempts = 3,
+        BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true
+    }).AddTimeout(TimeSpan.FromSeconds(10));
+});
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDBContext>().AddDefaultTokenProviders();
 builder.Services.AddAuthentication(options =>

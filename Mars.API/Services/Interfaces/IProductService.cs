@@ -27,6 +27,15 @@ namespace Mars.API.Services.Interfaces
         /// <param name="ct">Cancellation token.</param>
         /// <returns>The matching <see cref="ProductSeriesVariants"/>, or <c>null</c> if <paramref name="id"/> is empty/whitespace or no variants are found.</returns>
         Task<ProductSeriesVariants?> GetProductVariantsAsync(string id, CancellationToken ct = default);
+
+        /// <summary>
+        /// Retrieves a single variant of a product series, along with the series' name and thumbnail.
+        /// </summary>
+        /// <param name="id">The product/series id.</param>
+        /// <param name="variantId">The variant id (e.g. <c>V20-20-1-4IN-W-O-LOCK</c>).</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>The matching <see cref="ProductVariantDetail"/>, or <c>null</c> if either id is empty/whitespace or the series or variant is not found.</returns>
+        Task<ProductVariantDetail?> GetProductVariantAsync(string id, string variantId, CancellationToken ct = default);
         /// <summary>
         /// 
         /// Retrieves all stock products.

@@ -88,6 +88,44 @@ namespace Mars.API.Services.Products
         }
 
         /// <summary>
+        /// Retrieves a single variant of a product series, along with the series' name and thumbnail.
+        /// </summary>
+        /// <param name="id">The product/series id.</param>
+        /// <param name="variantId">The variant id (e.g. <c>V20-20-1-4IN-W-O-LOCK</c>).</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>The matching <see cref="ProductVariantDetail"/>, or <c>null</c> if either id is empty/whitespace or the series or variant is not found.</returns>
+        public async Task<ProductVariantDetail?> GetProductVariantAsync(string id, string variantId, CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(variantId))
+            {
+                _logger.LogWarning("GetProductVariantAsync called with null or empty id/variantId");
+                return null;
+            }
+
+            var series = await _variantRepository.GetByIdAsync(id, ct);
+            if (series is null)
+            {
+                _logger.LogWarning("ProductSeriesVariants not found for {Id}", id);
+                return null;
+            }
+
+            var variant = series.Variants.FirstOrDefault(v => v.Id == variantId);
+            if (variant is null)
+            {
+                _logger.LogWarning("Variant {VariantId} not found in series {Id}", variantId, id);
+                return null;
+            }
+
+            return new ProductVariantDetail
+            {
+                SeriesId = series.Id,
+                SeriesName = series.Name,
+                SeriesThumbnailImage = series.ThumbnailImage,
+                Variant = variant,
+            };
+        }
+
+        /// <summary>
         /// Retrieves all stock products.
         /// </summary>
         /// <param name="ct">Cancellation token.</param>

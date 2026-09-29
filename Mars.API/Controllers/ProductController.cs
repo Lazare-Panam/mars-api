@@ -60,6 +60,21 @@ namespace Mars.API.Controllers
 
             return Ok(variants);
         }
+
+        [HttpGet("{id}/variants/{variantId}")]
+        public async Task<IActionResult> GetProductVariant(string id, string variantId, CancellationToken ct)
+        {
+            _logger.LogInformation("GetProductVariant called for {Id} / {VariantId}", id, variantId);
+            var variant = await _productService.GetProductVariantAsync(id, variantId, ct);
+
+            if (variant is null)
+            {
+                _logger.LogWarning("Variant {VariantId} not found for {Id}", variantId, id);
+                return NotFound($"No variant {variantId} found for ID: {id}");
+            }
+
+            return Ok(variant);
+        }
         [HttpGet("stock")]
         public async Task<IActionResult> GetStockProducts(CancellationToken ct)
         {

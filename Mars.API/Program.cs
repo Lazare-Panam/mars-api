@@ -211,6 +211,40 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole(roleName));
         }
     }
+
+    // Seed an initial admin from configuration (user-secrets / env), never hardcoded.
+    // Idempotent: only created if an account with that email does not already exist.
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var adminEmail = builder.Configuration["AdminSeed:Email"];
+    var adminPassword = builder.Configuration["AdminSeed:Password"];
+
+    if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword)
+        && await userManager.FindByEmailAsync(adminEmail) is null)
+    {
+        var admin = new ApplicationUser
+        {
+            UserName = adminEmail,          // login is by email in this app
+            Email = adminEmail,
+            EmailConfirmed = true,
+            FirstName = "Site",
+            LastName = "Admin",
+            CompanyName = "Mars Valvenok",
+            JobTitle = "Administrator",
+            Country = "GB",
+        };
+
+        var created = await userManager.CreateAsync(admin, adminPassword);
+        if (created.Succeeded)
+        {
+            await userManager.AddToRoleAsync(admin, Roles.Admin);
+            Log.Information("Seeded admin user {Email}", adminEmail);
+        }
+        else
+        {
+            Log.Error("Failed to seed admin user {Email}: {Errors}", adminEmail,
+                string.Join("; ", created.Errors.Select(e => e.Description)));
+        }
+    }
 }
 app.UseSwagger();
 app.UseSwaggerUI();

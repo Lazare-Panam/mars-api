@@ -5,5 +5,6 @@
         public string ConnectionString { get; set; }
         public string SenderAddress { get; set; }
         public string InternalAddressEmail { get; set; }
+        public string AdminPortalUrl { get; set; }
     }
 }

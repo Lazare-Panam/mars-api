@@ -25,5 +25,12 @@ namespace Mars.API.Services.Interfaces
         /// </summary>
         /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
         Task<NotificationResult> HandleNewRfqSubmittedAsync(string userName, string userEmail, string userCompany, string quoteRequestId, IEnumerable<QuoteRequestItem> items);
+
+        /// <summary>
+        /// Sends the applicant confirmation and internal staff notification emails for a new credit line application.
+        /// Each email is sent independently, so a failure sending one does not prevent the other.
+        /// </summary>
+        /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
+        Task<NotificationResult> HandleNewCreditApplicationAsync(string contactName, string applicantEmail, string companyName, decimal creditLimitRequested, string currency, DateTimeOffset submittedAtUtc);
     }
 }

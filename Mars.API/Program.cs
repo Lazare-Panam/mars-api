@@ -88,6 +88,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStockProductRepository, StockProductRepository>();
 builder.Services.AddScoped<IRfqService, RfqService>();
+builder.Services.AddScoped<ICreditApplicationService, CreditApplicationService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddResiliencePipeline("azureServiceBus", builder =>
 {

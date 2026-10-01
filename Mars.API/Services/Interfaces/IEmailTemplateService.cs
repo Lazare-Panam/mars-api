@@ -39,5 +39,18 @@ namespace Mars.API.Services.Interfaces
         /// </summary>
         /// <returns>Rendered HTML with the quote request details substituted into the template.</returns>
         string GetRfqInternalHtml(string userName, string userCompany, string userEmail, string quoteRequestId, IEnumerable<QuoteRequestItem> items);
+
+        /// <summary>
+        /// Builds the HTML body for the confirmation email sent back to the applicant who submitted a credit line application.
+        /// </summary>
+        /// <returns>Rendered HTML with the applicant's details substituted into the template.</returns>
+        string GetCreditApplicationReceiptHtml(string contactName, string companyName);
+
+        /// <summary>
+        /// Builds the HTML body for the internal notification email alerting staff to a new credit line application.
+        /// </summary>
+        /// <param name="adminUrl">Fully-qualified link to the admin portal; caller-supplied from configuration, not user input.</param>
+        /// <returns>Rendered HTML with the application details substituted into the template.</returns>
+        string GetCreditApplicationInternalHtml(string companyName, string contactName, decimal creditLimitRequested, string currency, DateTimeOffset submittedAtUtc, string adminUrl);
     }
 }

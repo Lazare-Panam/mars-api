@@ -14,7 +14,11 @@
     <None Remove="EmailTemplates\InternalNewEnquiry.html" />
     <None Remove="EmailTemplates\NewEnquiry.html" />
     <None Remove="EmailTemplates\InternalNewRfqRequest.html" />
+    <None Remove="EmailTemplates\NewRegistration.html" />
+    <None Remove="EmailTemplates\NewRegistrationInternal.html" />
     <None Remove="EmailTemplates\NewRfqRequest.html" />
+    <None Remove="EmailTemplates\InternalNewCreditApplication.html" />
+    <None Remove="EmailTemplates\NewCreditApplication.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,7 +31,19 @@
     <EmbeddedResource Include="EmailTemplates\InternalNewRfqRequest.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="EmailTemplates\NewRegistration.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EmailTemplates\NewRegistrationInternal.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="EmailTemplates\NewRfqRequest.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EmailTemplates\InternalNewCreditApplication.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EmailTemplates\NewCreditApplication.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
@@ -60,14 +76,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="EmailTemplates\NewRegistration.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="EmailTemplates\NewRegistrationInternal.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>

@@ -167,6 +167,43 @@ namespace Mars.API.Services.Notification
         }
 
         /// <summary>
+        /// Builds the HTML body for the confirmation email sent back to the applicant who submitted a credit line application.
+        /// </summary>
+        /// <returns>Rendered HTML with the applicant's details substituted into the template.</returns>
+        public string GetCreditApplicationReceiptHtml(string contactName, string companyName)
+        {
+            string htmlContent = LoadTemplate("NewCreditApplication.html");
+            var replacements = new Dictionary<string, string>
+            {
+                // User-supplied free text crosses into HTML email output, so encode it.
+                { "{{ContactName}}", WebUtility.HtmlEncode(contactName) },
+                { "{{CompanyName}}", WebUtility.HtmlEncode(companyName) },
+            };
+            return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
+        /// Builds the HTML body for the internal notification email alerting staff to a new credit line application.
+        /// </summary>
+        /// <param name="adminUrl">Fully-qualified link to the admin portal; caller-supplied from configuration, not user input.</param>
+        /// <returns>Rendered HTML with the application details substituted into the template.</returns>
+        public string GetCreditApplicationInternalHtml(string companyName, string contactName, decimal creditLimitRequested, string currency, DateTimeOffset submittedAtUtc, string adminUrl)
+        {
+            string htmlContent = LoadTemplate("InternalNewCreditApplication.html");
+            var replacements = new Dictionary<string, string>
+            {
+                // User-supplied free text crosses into HTML email output, so encode it.
+                { "{{CompanyName}}", WebUtility.HtmlEncode(companyName) },
+                { "{{ContactName}}", WebUtility.HtmlEncode(contactName) },
+                // Amount is a typed decimal (no injection risk); currency is encoded defensively.
+                { "{{CreditLimitRequested}}", $"{WebUtility.HtmlEncode(currency)} {creditLimitRequested:N2}" },
+                { "{{SubmittedDate}}", submittedAtUtc.ToString("dd MMM yyyy HH:mm 'UTC'") },
+                { "{{AdminUrl}}", adminUrl },
+            };
+            return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
         /// Renders one HTML table row per quote request item. Product identifiers and descriptions come
         /// from the catalog, not the current request, but are still HTML-encoded before being embedded in
         /// the email body since this content is not otherwise validated as safe markup.

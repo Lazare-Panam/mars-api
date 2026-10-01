@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Mars.API.Models.Products;
 using Mars.API.Repository.Interfaces;
 using Mars.API.Services.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Mars.API.Services.Products
 {
@@ -10,13 +12,22 @@ namespace Mars.API.Services.Products
         private readonly INoSQLRepository<ProductDetail> _detailRepository;
         private readonly IProductVariantRepository _variantRepository;
         private readonly IStockProductRepository _stockProductRepository;
+        private readonly IDistributedCache _cache;
         private readonly ILogger<ProductService> _logger;
-        public ProductService(INoSQLRepository<ProductCatalog> catalogRepository, INoSQLRepository<ProductDetail> detailRepository, IProductVariantRepository variantRepository, IStockProductRepository stockProductRepository, ILogger<ProductService> logger)
+
+        // Variant data changes rarely, so a cached copy is served for up to 10 minutes.
+        private static readonly DistributedCacheEntryOptions VariantsCacheOptions = new()
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+        };
+
+        public ProductService(INoSQLRepository<ProductCatalog> catalogRepository, INoSQLRepository<ProductDetail> detailRepository, IProductVariantRepository variantRepository, IStockProductRepository stockProductRepository, IDistributedCache cache, ILogger<ProductService> logger)
         {
             _catalogRepository = catalogRepository;
             _detailRepository = detailRepository;
             _variantRepository = variantRepository;
             _stockProductRepository = stockProductRepository;
+            _cache = cache;
             _logger = logger;
         }
         /// <summary>
@@ -64,7 +75,9 @@ namespace Mars.API.Services.Products
         }
 
         /// <summary>
-        /// Retrieves the series variants for a product by id.
+        /// Retrieves the series variants for a product by id. Uses the cache-aside pattern:
+        /// the cache is checked first, and on a miss the series is loaded from MongoDB and
+        /// cached for <see cref="VariantsCacheOptions"/>.
         /// </summary>
         /// <param name="id">The product/series id.</param>
         /// <param name="ct">Cancellation token.</param>
@@ -77,6 +90,17 @@ namespace Mars.API.Services.Products
                 return null;
             }
 
+            var cacheKey = VariantsCacheKey(id);
+
+            var cached = await TryGetFromCacheAsync<ProductSeriesVariants>(cacheKey, ct);
+            if (cached is not null)
+            {
+                _logger.LogDebug("Variants cache hit for {Id}", id);
+                return cached;
+            }
+
+            _logger.LogDebug("Variants cache miss for {Id}", id);
+
             var variants = await _variantRepository.GetByIdAsync(id, ct);
             if (variants is null)
             {
@@ -84,6 +108,7 @@ namespace Mars.API.Services.Products
                 return null;
             }
 
+            await TrySetInCacheAsync(cacheKey, variants, VariantsCacheOptions, ct);
             return variants;
         }
 
@@ -102,10 +127,10 @@ namespace Mars.API.Services.Products
                 return null;
             }
 
-            var series = await _variantRepository.GetByIdAsync(id, ct);
+            // Reuse the cached series instead of querying MongoDB again.
+            var series = await GetProductVariantsAsync(id, ct);
             if (series is null)
             {
-                _logger.LogWarning("ProductSeriesVariants not found for {Id}", id);
                 return null;
             }
 
@@ -133,6 +158,36 @@ namespace Mars.API.Services.Products
         public async Task<IEnumerable<ProductDetail>> GetStockProductsAsync(CancellationToken ct = default)
         {
             return await _stockProductRepository.GetAllStockProductsAsync(ct);
+        }
+
+        private static string VariantsCacheKey(string id) => $"variants:{id}";
+
+        // The cache is an optimisation, never a dependency: if Redis is down or the cached
+        // value can't be read, log it and fall back to MongoDB instead of failing the request.
+        private async Task<T?> TryGetFromCacheAsync<T>(string key, CancellationToken ct) where T : class
+        {
+            try
+            {
+                var json = await _cache.GetStringAsync(key, ct);
+                return json is null ? null : JsonSerializer.Deserialize<T>(json);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "Cache read failed for {CacheKey}; falling back to the database", key);
+                return null;
+            }
+        }
+
+        private async Task TrySetInCacheAsync<T>(string key, T value, DistributedCacheEntryOptions options, CancellationToken ct)
+        {
+            try
+            {
+                await _cache.SetStringAsync(key, JsonSerializer.Serialize(value), options, ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "Cache write failed for {CacheKey}", key);
+            }
         }
     }
 }

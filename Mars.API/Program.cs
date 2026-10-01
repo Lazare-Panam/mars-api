@@ -175,7 +175,22 @@ builder.Services.AddCors(options =>
                .AllowCredentials();
     });
 });
-builder.Services.AddDistributedMemoryCache();
+// Sessions and the product variants cache both use IDistributedCache.
+// Use Redis when a connection string is configured; otherwise fall back to
+// in-memory, so environments without Redis yet (e.g. Azure today) keep working.
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrWhiteSpace(redisConnection))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "mars:";
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromDays(7);

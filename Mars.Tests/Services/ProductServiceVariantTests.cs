@@ -1,7 +1,10 @@
 using Mars.API.Models.Products;
 using Mars.API.Repository.Interfaces;
 using Mars.API.Services.Products;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Mars.Tests.Services
 {
@@ -31,7 +34,54 @@ namespace Mars.Tests.Services
         };
 
         private static ProductService CreateService(ProductSeriesVariants? series) =>
-            new(null!, null!, new FakeVariantRepository(series), null!, NullLogger<ProductService>.Instance);
+            CreateServiceWith(new FakeVariantRepository(series));
+
+        private static ProductService CreateServiceWith(FakeVariantRepository repository) =>
+            new(null!, null!, repository, null!, NewCache(), NullLogger<ProductService>.Instance);
+
+        private static IDistributedCache NewCache() =>
+            new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+
+        [Fact]
+        public async Task GetProductVariantsAsync_SecondCall_IsServedFromCache()
+        {
+            var repository = new FakeVariantRepository(Series());
+            var service = CreateServiceWith(repository);
+
+            var first = await service.GetProductVariantsAsync(SeriesId);
+            var second = await service.GetProductVariantsAsync(SeriesId);
+
+            Assert.NotNull(first);
+            Assert.NotNull(second);
+            Assert.Equal(first.Variants.Count, second.Variants.Count);
+            Assert.Equal("11.55", second.Variants[0].Specs["Price"]);
+            Assert.Equal(1, repository.Calls); // only the first call reached the database
+        }
+
+        [Fact]
+        public async Task GetProductVariantAsync_UsesTheCachedSeries()
+        {
+            var repository = new FakeVariantRepository(Series());
+            var service = CreateServiceWith(repository);
+
+            await service.GetProductVariantsAsync(SeriesId);
+            var result = await service.GetProductVariantAsync(SeriesId, VariantId);
+
+            Assert.NotNull(result);
+            Assert.Equal(1, repository.Calls);
+        }
+
+        [Fact]
+        public async Task GetProductVariantsAsync_UnknownSeries_IsNotCached()
+        {
+            var repository = new FakeVariantRepository(null);
+            var service = CreateServiceWith(repository);
+
+            await service.GetProductVariantsAsync("unknown-series");
+            await service.GetProductVariantsAsync("unknown-series");
+
+            Assert.Equal(2, repository.Calls);
+        }
 
         [Fact]
         public async Task GetProductVariantAsync_ExistingVariant_ReturnsVariantWithSeriesInfo()
@@ -95,8 +145,13 @@ namespace Mars.Tests.Services
 
         private sealed class FakeVariantRepository(ProductSeriesVariants? series) : IProductVariantRepository
         {
-            public Task<ProductSeriesVariants?> GetByIdAsync(string id, CancellationToken ct) =>
-                Task.FromResult(series is not null && series.Id == id ? series : null);
+            public int Calls { get; private set; }
+
+            public Task<ProductSeriesVariants?> GetByIdAsync(string id, CancellationToken ct)
+            {
+                Calls++;
+                return Task.FromResult(series is not null && series.Id == id ? series : null);
+            }
 
             public Task<decimal?> GetPriceAsync(string seriesId, string variantId, CancellationToken ct = default) =>
                 throw new NotImplementedException();

@@ -162,5 +162,55 @@ namespace Mars.API.Services.Notification
             var body = _templateService.GetEnquiryInternalHtml(userName, userCompany, userEmail, userCountry, message);
             await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"URGENT: New Technical Enquiry from {userCompany}", body);
         }
+
+        /// <summary>
+        /// Sends the applicant confirmation and internal staff notification emails for a new credit line application.
+        /// Each email is sent independently, so a failure sending one does not prevent the other.
+        /// </summary>
+        /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
+        public async Task<NotificationResult> HandleNewCreditApplicationAsync(string contactName, string applicantEmail, string companyName, decimal creditLimitRequested, string currency, DateTimeOffset submittedAtUtc)
+        {
+            var result = new NotificationResult();
+            try
+            {
+                await SendCreditApplicationReceiptAsync(contactName, applicantEmail, companyName);
+                result.ReceiptSent = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send credit application receipt to {Email}", applicantEmail);
+            }
+
+            try
+            {
+                await SendCreditApplicationInternalNotificationAsync(companyName, contactName, creditLimitRequested, currency, submittedAtUtc);
+                result.InternalNotificationSent = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send internal credit application notification for {Company}", companyName);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Renders and sends the confirmation email back to the applicant who submitted a credit line application.
+        /// </summary>
+        private async Task SendCreditApplicationReceiptAsync(string contactName, string applicantEmail, string companyName)
+        {
+            var body = _templateService.GetCreditApplicationReceiptHtml(contactName, companyName);
+            await _emailService.SendEmailAsync(applicantEmail, "We've received your credit line application", body);
+        }
+
+        /// <summary>
+        /// Renders and sends the internal staff notification email for a new credit line application,
+        /// to the address configured in <see cref="EmailSettings.InternalAddressEmail"/>.
+        /// The admin portal link is taken from <see cref="EmailSettings.AdminPortalUrl"/>.
+        /// </summary>
+        private async Task SendCreditApplicationInternalNotificationAsync(string companyName, string contactName, decimal creditLimitRequested, string currency, DateTimeOffset submittedAtUtc)
+        {
+            var body = _templateService.GetCreditApplicationInternalHtml(companyName, contactName, creditLimitRequested, currency, submittedAtUtc, _emailSettings.AdminPortalUrl);
+            await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"New Credit Application from {companyName}", body);
+        }
     }
 }

@@ -19,11 +19,14 @@ namespace Mars.API.Controllers
         private readonly IEnquiryPublisher _enquiryPublisher;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(ApplicationDBContext dbContext, IEnquiryPublisher enquiryPublisher, ILogger<UserController> logger)
+        private readonly ICreditApplicationService _creditApplicationService;
+        
+        public UserController(ApplicationDBContext dbContext, IEnquiryPublisher enquiryPublisher, ILogger<UserController> logger, ICreditApplicationService creditApplicationService)
         {
             _dbContext = dbContext;
             _enquiryPublisher = enquiryPublisher;
             _logger = logger;
+            _creditApplicationService = creditApplicationService;
         }
 
         [HttpPost("enquiry")]
@@ -64,6 +67,17 @@ namespace Mars.API.Controllers
             }
 
             return Ok(new { message = "Enquiry received", enquiryId = enquiry.Id });
+        }
+
+        [HttpPost("credit-applications")]
+        public async Task<IActionResult> SubmitCreditApplication([FromBody] CreditLineApplication application)
+        {
+            var created = await _creditApplicationService.CreateApplicationAsync(application);
+            return Ok(new
+            {
+                message = "Credit application submitted successfully.",
+                application = created
+            });
         }
     }
 }

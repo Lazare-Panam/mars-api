@@ -18,7 +18,8 @@ namespace Mars.API.Repository.SQL
         public DbSet<BasketItem> BasketItems => Set<BasketItem>();
         public DbSet<Enquiry> Enquiry => Set<Enquiry>();
         public DbSet<QuoteRequest> QuoteRequests => Set<QuoteRequest>();
-        public DbSet<QuoteRequestItem> QuoteRequestItems => Set<QuoteRequestItem>();    
+        public DbSet<QuoteRequestItem> QuoteRequestItems => Set<QuoteRequestItem>();
+        public DbSet<CreditLineApplication> CreditLineApplications => Set<CreditLineApplication>();
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -27,6 +28,7 @@ namespace Mars.API.Repository.SQL
             builder.ApplyConfiguration(new EnquiryConfiguration());
             builder.ApplyConfiguration(new QuoteRequestConfiguration());
             builder.ApplyConfiguration(new QuoteRequestItemConfiguration());
+            builder.ApplyConfiguration(new CreditLineApplicationConfiguration());
         }
     }
 }

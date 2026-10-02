@@ -6,7 +6,6 @@ namespace Mars.API.Models.Basket
     {
         public string CustomerBasketId { get; set; } = Guid.NewGuid().ToString();
         public string? UserId { get; set; }
-        public string SessionId { get; set; }
         public List<BasketItem> Items { get; set; } = [];
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }

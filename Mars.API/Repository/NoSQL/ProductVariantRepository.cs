@@ -6,7 +6,12 @@ namespace Mars.API.Repository.NoSQL
 {
     public class ProductVariantRepository : MongoRepositoryBase<ProductSeriesVariants>, IProductVariantRepository
     {
-        public ProductVariantRepository(IMongoDatabase database, ILogger<ProductVariantRepository> logger) : base(database, logger, "product_variants")
+        private const string CollectionName = "product_variants";
+
+        public ProductVariantRepository(
+            IMongoDatabase database,
+            ILogger<ProductVariantRepository> logger)
+            : base(database, logger, CollectionName)
         {
 
         }

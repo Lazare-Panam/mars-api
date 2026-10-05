@@ -177,7 +177,7 @@ builder.Services.AddCors(options =>
 // Sessions and the product variants cache both use IDistributedCache.
 // Use Redis when a connection string is configured; otherwise fall back to
 // in-memory, so environments without Redis yet (e.g. Azure today) keep working.
-var redisConnection = builder.Configuration.GetConnectionString("Redis");
+var redisConnection = builder.Configuration.GetValue<string>("ConnectionStrings:Redis");
 if (!string.IsNullOrWhiteSpace(redisConnection))
 {
     builder.Services.AddStackExchangeRedisCache(options =>

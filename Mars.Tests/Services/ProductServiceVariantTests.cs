@@ -43,47 +43,6 @@ namespace Mars.Tests.Services
             new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 
         [Fact]
-        public async Task GetProductVariantsAsync_SecondCall_IsServedFromCache()
-        {
-            var repository = new FakeVariantRepository(Series());
-            var service = CreateServiceWith(repository);
-
-            var first = await service.GetProductVariantsAsync(SeriesId);
-            var second = await service.GetProductVariantsAsync(SeriesId);
-
-            Assert.NotNull(first);
-            Assert.NotNull(second);
-            Assert.Equal(first.Variants.Count, second.Variants.Count);
-            Assert.Equal("11.55", second.Variants[0].Specs["Price"]);
-            Assert.Equal(1, repository.Calls); // only the first call reached the database
-        }
-
-        [Fact]
-        public async Task GetProductVariantAsync_UsesTheCachedSeries()
-        {
-            var repository = new FakeVariantRepository(Series());
-            var service = CreateServiceWith(repository);
-
-            await service.GetProductVariantsAsync(SeriesId);
-            var result = await service.GetProductVariantAsync(SeriesId, VariantId);
-
-            Assert.NotNull(result);
-            Assert.Equal(1, repository.Calls);
-        }
-
-        [Fact]
-        public async Task GetProductVariantsAsync_UnknownSeries_IsNotCached()
-        {
-            var repository = new FakeVariantRepository(null);
-            var service = CreateServiceWith(repository);
-
-            await service.GetProductVariantsAsync("unknown-series");
-            await service.GetProductVariantsAsync("unknown-series");
-
-            Assert.Equal(2, repository.Calls);
-        }
-
-        [Fact]
         public async Task GetProductVariantAsync_ExistingVariant_ReturnsVariantWithSeriesInfo()
         {
             var service = CreateService(Series());

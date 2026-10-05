@@ -31,21 +31,22 @@ namespace Mars.API.Services.Notification
             ArgumentException.ThrowIfNullOrWhiteSpace(subject);
             ArgumentException.ThrowIfNullOrWhiteSpace(htmlBody);
 
-            _logger.LogInformation("Attempting to send email to {Recipient} with subject: {Subject}", recipientEmail, subject);
+            // Recipient and subject aren't logged: both can contain personal data (address, company name).
+            _logger.LogInformation("Attempting to send email");
 
             try
             {
                 var response = await _emailClient.SendAsync(wait: WaitUntil.Completed, senderAddress: _emailSettings.SenderAddress, recipientAddress: recipientEmail, subject: subject, htmlContent: htmlBody);
-                _logger.LogInformation("Email sent successfully to {Recipient}. Operation ID: {OperationId}", recipientEmail, response.Id);
+                _logger.LogInformation("Email sent successfully. Operation ID: {OperationId}", response.Id);
             }
             catch (RequestFailedException ex)
             {
-                _logger.LogError(ex, "Azure Communication Services failed to send email to {Recipient}. Error Code: {ErrorCode}", recipientEmail, ex.ErrorCode);
+                _logger.LogError(ex, "Azure Communication Services failed to send email. Error Code: {ErrorCode}", ex.ErrorCode);
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error occurred while sending email to {Recipient}", recipientEmail);
+                _logger.LogError(ex, "Unexpected error occurred while sending email");
                 throw;
             }
         }

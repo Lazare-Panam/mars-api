@@ -25,7 +25,7 @@ namespace Mars.API.Services.User
             await _dbContext.SaveChangesAsync();
 
             await _notificationService.HandleNewCreditApplicationAsync(application.ContactName, application.Email, application.CompanyName, application.CreditLimitRequested, application.Currency, application.SubmittedAtUtc);
-            _logger.LogInformation("New credit line application created for {@CompanyName} with ID {@ApplicationId}", application.CompanyName, application.ApplicationId);
+            _logger.LogInformation("New credit line application created with ID {ApplicationId}", application.ApplicationId);
             return application;
         }
         public async Task<List<CreditLineApplication>> GetAllApplicationsAsync()

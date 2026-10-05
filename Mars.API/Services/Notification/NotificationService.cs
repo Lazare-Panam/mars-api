@@ -35,7 +35,7 @@ namespace Mars.API.Services.Notification
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send enquiry receipt to {Email}", userEmail);
+                _logger.LogError(ex, "Failed to send enquiry receipt");
             }
 
             try
@@ -45,7 +45,7 @@ namespace Mars.API.Services.Notification
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send internal enquiry notification for {Company}", userCompany);
+                _logger.LogError(ex, "Failed to send internal enquiry notification");
             }
             return result;
         }
@@ -64,7 +64,7 @@ namespace Mars.API.Services.Notification
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send registration welcome email to {Email}", userEmail);
+                _logger.LogError(ex, "Failed to send registration welcome email");
             }
 
             try
@@ -74,7 +74,7 @@ namespace Mars.API.Services.Notification
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send internal registration notification for {Company}", userCompany);
+                _logger.LogError(ex, "Failed to send internal registration notification");
             }
             return result;
         }
@@ -112,7 +112,7 @@ namespace Mars.API.Services.Notification
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send quote request receipt to {Email}", userEmail);
+                _logger.LogError(ex, "Failed to send quote request receipt for {QuoteRequestId}", quoteRequestId);
             }
 
             try
@@ -122,7 +122,7 @@ namespace Mars.API.Services.Notification
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send internal quote request notification for {Company}", userCompany);
+                _logger.LogError(ex, "Failed to send internal quote request notification for {QuoteRequestId}", quoteRequestId);
             }
             return result;
         }
@@ -178,7 +178,7 @@ namespace Mars.API.Services.Notification
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send credit application receipt to {Email}", applicantEmail);
+                _logger.LogError(ex, "Failed to send credit application receipt");
             }
 
             try
@@ -188,7 +188,7 @@ namespace Mars.API.Services.Notification
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send internal credit application notification for {Company}", companyName);
+                _logger.LogError(ex, "Failed to send internal credit application notification");
             }
             return result;
         }

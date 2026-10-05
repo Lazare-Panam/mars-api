@@ -41,8 +41,6 @@ namespace Mars.API.Controllers
                 }
                 return ValidationProblem(ModelState);
             }
-            _logger.LogInformation("Enquiry received for email {Email}", enquiryRequest.UserEmail);
-
             var enquiry = new Enquiry
             {
                 Id = Guid.NewGuid(),
@@ -56,6 +54,7 @@ namespace Mars.API.Controllers
 
             _dbContext.Enquiry.Add(enquiry);
             await _dbContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Enquiry {EnquiryId} received", enquiry.Id);
 
             try
             {

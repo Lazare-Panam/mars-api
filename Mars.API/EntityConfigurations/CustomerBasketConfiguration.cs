@@ -19,9 +19,6 @@ namespace Mars.API.EntityConfigurations
                 .HasMaxLength(450)
                 .IsRequired(false);
 
-            builder.Property(cb => cb.SessionId)
-                .HasMaxLength(450);
-
             builder.Property(cb => cb.CreatedAt)
                 .IsRequired();
 

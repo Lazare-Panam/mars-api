@@ -237,12 +237,12 @@ using (var scope = app.Services.CreateScope())
         if (created.Succeeded)
         {
             await userManager.AddToRoleAsync(admin, Roles.Admin);
-            Log.Information("Seeded admin user {Email}", adminEmail);
+            Log.Information("Seeded admin user {UserId}", admin.Id);
         }
         else
         {
-            Log.Error("Failed to seed admin user {Email}: {Errors}", adminEmail,
-                string.Join("; ", created.Errors.Select(e => e.Description)));
+            Log.Error("Failed to seed admin user: {ErrorCodes}",
+                string.Join("; ", created.Errors.Select(e => e.Code)));
         }
     }
 }

@@ -50,7 +50,7 @@ namespace Mars.API.Services.User
 
             await _context.QuoteRequests.AddAsync(rfq);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Quote request {@QuoteRequestId} created for user {@UserId} with {@ItemCount} item(s)", rfq.QuoteRequestId, userId, rfq.Items.Count);
+            _logger.LogInformation("Quote request {QuoteRequestId} created for user {UserId} with {ItemCount} item(s)", rfq.QuoteRequestId, userId, rfq.Items.Count);
             await _notificationService.HandleNewRfqSubmittedAsync(userName, userEmail, userCompany, rfq.QuoteRequestId, rfq.Items);
             return rfq;
         }

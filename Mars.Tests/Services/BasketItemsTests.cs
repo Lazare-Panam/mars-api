@@ -3,7 +3,7 @@ using Mars.API.Services.User;
 
 namespace Mars.Tests.Services
 {
-    public class BasketMergeTests
+    public class BasketItemsTests
     {
         private const string SeriesId = "economical-two-piece-ball-valve";
 
@@ -14,11 +14,11 @@ namespace Mars.Tests.Services
             prices.ToDictionary(p => (SeriesId, p.VariantId), p => p.Price);
 
         [Fact]
-        public void Apply_NewItem_IsAddedWithCataloguePrice()
+        public void Add_NewItem_IsAddedWithCataloguePrice()
         {
             var basket = new CustomerBasket("user-1");
 
-            BasketMerge.Apply(basket, [Item("V20-A", 2)], Prices(("V20-A", 11.55m)));
+            BasketItems.Add(basket, [Item("V20-A", 2)], Prices(("V20-A", 11.55m)));
 
             var item = Assert.Single(basket.Items);
             Assert.Equal("V20-A", item.ProductId);
@@ -29,25 +29,25 @@ namespace Mars.Tests.Services
         }
 
         [Fact]
-        public void Apply_ItemAlreadyInBasket_AddsQuantities()
+        public void Add_ItemAlreadyInBasket_AddsQuantities()
         {
             var basket = new CustomerBasket("user-1");
-            BasketMerge.Apply(basket, [Item("V20-A", 2)], Prices(("V20-A", 11.55m)));
+            BasketItems.Add(basket, [Item("V20-A", 2)], Prices(("V20-A", 11.55m)));
 
-            BasketMerge.Apply(basket, [Item("V20-A", 3)], Prices(("V20-A", 11.55m)));
+            BasketItems.Add(basket, [Item("V20-A", 3)], Prices(("V20-A", 11.55m)));
 
             var item = Assert.Single(basket.Items);
             Assert.Equal(5, item.Quantity);
         }
 
         [Fact]
-        public void Apply_GuestCart_IsMergedIntoExistingItems()
+        public void Add_SavingAgain_JoinsExistingItems()
         {
             var basket = new CustomerBasket("user-1");
-            BasketMerge.Apply(basket, [Item("V20-A", 1)], Prices(("V20-A", 11.55m)));
+            BasketItems.Add(basket, [Item("V20-A", 1)], Prices(("V20-A", 11.55m)));
 
-            // Guest cart: one item the user already has, one new item.
-            BasketMerge.Apply(basket, [Item("V20-A", 4), Item("V20-B", 1)], Prices(("V20-A", 11.55m), ("V20-B", 13.71m)));
+            // Saving the cart page again: one item the user already has, one new item.
+            BasketItems.Add(basket, [Item("V20-A", 4), Item("V20-B", 1)], Prices(("V20-A", 11.55m), ("V20-B", 13.71m)));
 
             Assert.Equal(2, basket.Items.Count);
             Assert.Equal(5, basket.Items.Single(i => i.ProductId == "V20-A").Quantity);
@@ -55,22 +55,22 @@ namespace Mars.Tests.Services
         }
 
         [Fact]
-        public void Apply_UnpricedOrUnknownVariant_IsStoredWithZeroPrice()
+        public void Add_UnpricedOrUnknownVariant_IsStoredWithZeroPrice()
         {
             var basket = new CustomerBasket("user-1");
 
-            BasketMerge.Apply(basket, [Item("UNPRICED"), Item("NOT-IN-PRICES")], Prices(("UNPRICED", null)));
+            BasketItems.Add(basket, [Item("UNPRICED"), Item("NOT-IN-PRICES")], Prices(("UNPRICED", null)));
 
             Assert.All(basket.Items, i => Assert.Equal(0m, i.UnitPrice));
         }
 
         [Fact]
-        public void Apply_PriceIsRefreshedFromTheCatalogue()
+        public void Add_PriceIsRefreshedFromTheCatalogue()
         {
             var basket = new CustomerBasket("user-1");
-            BasketMerge.Apply(basket, [Item("V20-A")], Prices(("V20-A", 11.55m)));
+            BasketItems.Add(basket, [Item("V20-A")], Prices(("V20-A", 11.55m)));
 
-            BasketMerge.Apply(basket, [Item("V20-A")], Prices(("V20-A", 12.00m)));
+            BasketItems.Add(basket, [Item("V20-A")], Prices(("V20-A", 12.00m)));
 
             Assert.Equal(12.00m, Assert.Single(basket.Items).UnitPrice);
         }

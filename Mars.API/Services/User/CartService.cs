@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Mars.API.Services.User
 {
     /// <summary>
-    /// The signed-in user's basket. There is one basket per user, found by user id;
-    /// guests keep their cart in the browser until they log in and it is merged in.
+    /// The signed-in user's saved cart. There is one per user, found by user id.
+    /// The cart page itself lives in the browser and is saved here with "Save Cart".
     /// </summary>
     public class CartService : ICartService
     {
@@ -36,18 +36,7 @@ namespace Mars.API.Services.User
         }
 
         /// <summary>
-        /// Adds one item to the user's basket, increasing the quantity if it's already there.
-        /// </summary>
-        /// <param name="userId">The signed-in user's id.</param>
-        /// <param name="addToCartRequest">The variant, quantity, and display details to add.</param>
-        /// <returns>The updated basket.</returns>
-        public Task<CustomerBasket> AddOrUpdate(string userId, AddToCartRequest addToCartRequest)
-        {
-            return AddItemsAsync(userId, [addToCartRequest]);
-        }
-
-        /// <summary>
-        /// Adds several items to the user's basket in one save, e.g. a guest cart being merged at login.
+        /// Adds several items to the user's basket in one save, e.g. the cart page being saved.
         /// Items already in the basket have their quantities increased. Prices come from the catalogue.
         /// Creates the basket first if the user doesn't have one.
         /// </summary>
@@ -66,7 +55,7 @@ namespace Mars.API.Services.User
                 _logger.LogInformation("Creating basket {BasketId} for user {UserId}", basket.CustomerBasketId, userId);
             }
 
-            BasketMerge.Apply(basket, items, prices);
+            BasketItems.Add(basket, items, prices);
             await _context.SaveChangesAsync();
             _logger.LogInformation("Added {ItemCount} item(s) to basket {BasketId} for user {UserId}", items.Count, basket.CustomerBasketId, userId);
             return basket;

@@ -5,11 +5,11 @@ namespace Mars.API.Services.User
     /// <summary>
     /// Adds items to a basket: an item already in the basket has its quantity increased,
     /// a new item is appended. Prices always come from <paramref name="prices"/> (the catalogue),
-    /// never from the request. Used both for "add to cart" and for merging a guest cart at login.
+    /// never from the request.
     /// </summary>
-    public static class BasketMerge
+    public static class BasketItems
     {
-        public static void Apply(
+        public static void Add(
             CustomerBasket basket,
             IEnumerable<AddToCartRequest> items,
             IReadOnlyDictionary<(string SeriesId, string VariantId), decimal?> prices)

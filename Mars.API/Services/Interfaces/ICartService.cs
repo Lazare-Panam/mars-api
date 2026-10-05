@@ -12,16 +12,7 @@ namespace Mars.API.Services.Interfaces
         Task<CustomerBasket?> GetBasketAsync(string userId);
 
         /// <summary>
-        /// Adds one item to the user's basket, increasing the quantity if it's already there.
-        /// Creates the basket first if the user doesn't have one.
-        /// </summary>
-        /// <param name="userId">The signed-in user's id.</param>
-        /// <param name="addToCartRequest">The variant, quantity, and display details to add.</param>
-        /// <returns>The updated basket.</returns>
-        Task<CustomerBasket> AddOrUpdate(string userId, AddToCartRequest addToCartRequest);
-
-        /// <summary>
-        /// Adds several items in one save (e.g. merging a guest cart at login). Quantities of items
+        /// Adds several items in one save (e.g. the cart page being saved). Quantities of items
         /// already in the basket are increased; prices come from the catalogue.
         /// </summary>
         /// <param name="userId">The signed-in user's id.</param>

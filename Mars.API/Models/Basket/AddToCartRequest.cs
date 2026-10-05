@@ -1,4 +1,4 @@
-﻿namespace Mars.API.Models.Basket
+namespace Mars.API.Models.Basket
 {
     public record AddToCartRequest(
         string SeriesId,
@@ -8,11 +8,14 @@
         string PictureUrl
     );
 
+    /// <summary>
+    /// Changes one saved item's quantity. A quantity of 0 removes the item.
+    /// </summary>
     public record UpdateQuantityRequest(int Quantity);
 
     /// <summary>
-    /// A guest's browser cart, sent once after login to be merged into the user's basket.
+    /// The items from the user's cart page, saved into their saved cart. Items already saved
+    /// have their quantities increased; new items are added.
     /// </summary>
-    /*Todo Disha, remvoe the merge, why record? why not class , difference between record and class*/
-    public record MergeBasketRequest(List<AddToCartRequest> Items);
+    public record SaveBasketRequest(List<AddToCartRequest> Items);
 }

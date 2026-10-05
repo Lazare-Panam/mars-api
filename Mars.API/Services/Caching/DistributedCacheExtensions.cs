@@ -7,7 +7,7 @@ namespace Mars.API.Services.Caching
     {
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-        public static async Task<T?> GetOrSetAsync<T>( this IDistributedCache cache,string key,Func<Task<T?>> fetchFromSource,TimeSpan ttl)
+        public static async Task<T?> GetOrSetAsync<T>(this IDistributedCache cache, string key,Func<Task<T?>> fetchFromSource, TimeSpan ttl)
         {
             byte[]? cachedBytes = await cache.GetAsync(key);
 

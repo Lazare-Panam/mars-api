@@ -142,17 +142,10 @@ builder.Services.AddAuthentication(options =>
             Log.Error(context.Exception, "JWT Authentication failed");
             return Task.CompletedTask;
         },
-        OnTokenValidated = async context =>
+        OnTokenValidated = context =>
         {
-            // A token that was logged out (POST /api/auth/logout) is rejected even though it hasn't expired.
-            var tokenId = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
-            var revocation = context.HttpContext.RequestServices.GetRequiredService<ITokenRevocationService>();
-            if (tokenId is not null && await revocation.IsRevokedAsync(tokenId, context.HttpContext.RequestAborted))
-            {
-                context.Fail("This token has been logged out.");
-                return;
-            }
             Log.Information("JWT Token claims attached");
+            return Task.CompletedTask;
         }
     };
 });
@@ -192,7 +185,6 @@ builder.Services.AddSession(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddSingleton<ITokenRevocationService, TokenRevocationService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.Configure<ServiceBusSettings>(builder.Configuration.GetSection("ServiceBusSettings"));
 

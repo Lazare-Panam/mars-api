@@ -31,6 +31,7 @@ namespace Mars.API.Controllers
         public async Task<IActionResult> RegisterUser(RegisterDTO registerDTO, IValidator<RegisterDTO> validator)
         {
             var validationResult = await validator.ValidateAsync(registerDTO);
+            /*TODO:Rishik Consider using FluentValidation's automatic model validation feature instead of manually validating in the controller. This can be done by adding the FluentValidation.AspNetCore package and configuring it in Startup.cs or Program.cs. This way, you can remove the manual validation code and let FluentValidation handle it automatically, returning a 400 Bad Request response with validation errors if the model is invalid.*/  
             if (!validationResult.IsValid)
             {
                 foreach (var error in validationResult.Errors)
@@ -39,14 +40,12 @@ namespace Mars.API.Controllers
                 }
                 return ValidationProblem(ModelState);
             }
-
-            // Personal data (email, name, company) is never logged; only the user id once there is a user.
-            _logger.LogInformation("Register called");
+            _logger.LogInformation("Register called ");
             var existingUser = await _userManager.FindByEmailAsync(registerDTO.Email);
-
+            // Log: Input Validation Failures.
             if (existingUser != null)
             {
-                _logger.LogWarning("Registration failed: email is already registered to user {UserId}", existingUser.Id);
+                _logger.LogWarning("Registration failed: email is already registered to user {@UserId}", existingUser.Id);
                 return Problem(
                     statusCode: StatusCodes.Status409Conflict,
                     title: "Email is already registered.",
@@ -69,7 +68,7 @@ namespace Mars.API.Controllers
             if(!result.Succeeded)
             {
                 // Error codes, not descriptions: descriptions can contain the username (the email).
-                _logger.LogWarning("Registration failed: {ErrorCodes}", result.Errors.Select(e => e.Code));
+                _logger.LogWarning("Registration failed: {@ErrorCodes}", result.Errors.Select(e => e.Code));
                 return Problem(
                    statusCode: StatusCodes.Status400BadRequest,
                    title: "Registration failed.",
@@ -83,7 +82,7 @@ namespace Mars.API.Controllers
             }
 
             await _userManager.AddToRoleAsync(user, Roles.User);
-            _logger.LogInformation("User {UserId} registered successfully", user.Id);
+            _logger.LogInformation("User {@UserId} registered successfully", user.Id);
             await _notificationService.HandleNewUserRegisteredAsync(
                 userName: $"{user.FirstName} {user.LastName}",
                 userEmail: user.Email,
@@ -92,7 +91,7 @@ namespace Mars.API.Controllers
                 userJobTitle: registerDTO.JobTitle,
                 registrationDate: DateTime.UtcNow.ToString("dd MMM yyyy")
             );
-            _logger.LogInformation("Notification sent for new user registration {UserId}", user.Id);
+            _logger.LogInformation("Notification sent for new user registration {@UserId}", user.Id);
             return Ok(new { message = "User registered successfully." });
         }
 
@@ -123,7 +122,7 @@ namespace Mars.API.Controllers
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: true);
             if (result.IsLockedOut)
             {
-                _logger.LogWarning("Login failed for user {UserId}: account is locked out.", user.Id);
+                _logger.LogWarning("Login failed for user {@UserId}: account is locked out.", user.Id);
                 return Problem(
                     statusCode: StatusCodes.Status401Unauthorized,
                     title: "Account locked. Try again later.",
@@ -133,7 +132,7 @@ namespace Mars.API.Controllers
 
             if (!result.Succeeded)
             {
-                _logger.LogWarning("Login failed for user {UserId}: invalid password.", user.Id);
+                _logger.LogWarning("Login failed for user {@UserId}: invalid password.", user.Id);
                 return Problem(
                     statusCode: StatusCodes.Status401Unauthorized,
                     title: "Invalid email or password.",
@@ -142,7 +141,7 @@ namespace Mars.API.Controllers
             }
             var roles = await _userManager.GetRolesAsync(user);
             (string token, DateTime expiresAt) = _authService.CreateToken(user, roles);
-            _logger.LogInformation("User {UserId} logged in successfully", user.Id);
+            _logger.LogInformation("User {@UserId} logged in successfully", user.Id);
             return Ok(new
             {
                 token,
@@ -151,23 +150,17 @@ namespace Mars.API.Controllers
         }
 
         /// <summary>
-        /// Logs out: the token sent with this request stops working straight away,
-        /// instead of staying valid until it expires.
+        /// Logs out the current user. With stateless JWTs there is nothing to invalidate
+        /// server-side, so the client is responsible for discarding its token; this endpoint
+        /// only records the event. (Once refresh tokens exist, revoke the refresh token here.)
         /// </summary>
         [HttpPost("logout")]
         [Authorize]
-        public async Task<IActionResult> Logout([FromServices] ITokenRevocationService tokenRevocation, CancellationToken ct)
+        public IActionResult Logout()
         {
-            var tokenId = User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
-            var expires = User.FindFirst(JwtRegisteredClaimNames.Exp)?.Value;
-            if (tokenId is null || !long.TryParse(expires, out var expiresUnix))
-            {
-                return BadRequest("The token has no id or expiry.");
-            }
-
-            await tokenRevocation.RevokeAsync(tokenId, DateTimeOffset.FromUnixTimeSeconds(expiresUnix), ct);
-            _logger.LogInformation("User {UserId} logged out", User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value);
-            return NoContent();
+            var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            _logger.LogInformation("User {UserId} logged out", userId);
+            return Ok(new { message = "Logged out. Please discard your token." });
         }
     }
 }

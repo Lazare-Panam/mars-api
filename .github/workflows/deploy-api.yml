@@ -67,7 +67,10 @@ jobs:
       - name: Deploy to Container App
         run: |
           az extension add --name containerapp --upgrade --yes
+          # --container-name is required once the app has a Redis sidecar
+          # (the CLI refuses --image without it when there are several containers).
           az containerapp update \
             --name $CONTAINER_APP \
             --resource-group $RESOURCE_GROUP \
+            --container-name $CONTAINER_APP \
             --image $IMAGE:${{ github.sha }}

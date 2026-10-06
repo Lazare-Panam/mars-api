@@ -1,6 +1,8 @@
 using Mars.API.Models.Products;
 using Mars.API.Repository.Interfaces;
+using Mars.API.Services.Caching;
 using Mars.API.Services.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Mars.API.Services.Products
 {
@@ -10,13 +12,19 @@ namespace Mars.API.Services.Products
         private readonly INoSQLRepository<ProductDetail> _detailRepository;
         private readonly IProductVariantRepository _variantRepository;
         private readonly IStockProductRepository _stockProductRepository;
+        private readonly IDistributedCache _cache;
         private readonly ILogger<ProductService> _logger;
-        public ProductService(INoSQLRepository<ProductCatalog> catalogRepository, INoSQLRepository<ProductDetail> detailRepository, IProductVariantRepository variantRepository, IStockProductRepository stockProductRepository, ILogger<ProductService> logger)
+
+        // Product detail changes rarely, so a cached copy is served for up to 10 minutes.
+        private static readonly TimeSpan DetailCacheTtl = TimeSpan.FromMinutes(10);
+
+        public ProductService(INoSQLRepository<ProductCatalog> catalogRepository, INoSQLRepository<ProductDetail> detailRepository, IProductVariantRepository variantRepository, IStockProductRepository stockProductRepository, IDistributedCache cache, ILogger<ProductService> logger)
         {
             _catalogRepository = catalogRepository;
             _detailRepository = detailRepository;
             _variantRepository = variantRepository;
             _stockProductRepository = stockProductRepository;
+            _cache = cache;
             _logger = logger;
         }
         /// <summary>
@@ -54,12 +62,16 @@ namespace Mars.API.Services.Products
                 _logger.LogWarning("GetProductDetailAsync called with null or empty id");
                 return null;
             }
-            var detail = await _detailRepository.GetByIdAsync(id, ct);
+            var detail = await _cache.GetOrSetAsync<ProductDetail>(
+                DetailCacheKey(id),
+                () => _detailRepository.GetByIdAsync(id, ct),
+                DetailCacheTtl);
+
             if (detail is null)
             {
                 _logger.LogWarning("ProductDetail not found for {Id}", id);
-                return null;
             }
+
             return detail;
         }
 
@@ -81,7 +93,6 @@ namespace Mars.API.Services.Products
             if (variants is null)
             {
                 _logger.LogWarning("ProductSeriesVariants not found for {Id}", id);
-                return null;
             }
 
             return variants;
@@ -102,10 +113,9 @@ namespace Mars.API.Services.Products
                 return null;
             }
 
-            var series = await _variantRepository.GetByIdAsync(id, ct);
+            var series = await GetProductVariantsAsync(id, ct);
             if (series is null)
             {
-                _logger.LogWarning("ProductSeriesVariants not found for {Id}", id);
                 return null;
             }
 
@@ -134,5 +144,7 @@ namespace Mars.API.Services.Products
         {
             return await _stockProductRepository.GetAllStockProductsAsync(ct);
         }
+
+        private static string DetailCacheKey(string id) => $"detail:{id}";
     }
 }

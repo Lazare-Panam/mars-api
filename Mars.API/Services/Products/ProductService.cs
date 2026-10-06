@@ -35,7 +35,7 @@ namespace Mars.API.Services.Products
             var catalog = await _catalogRepository.GetByIdAsync(id, ct);
             if(catalog == null)
             {
-                _logger.LogWarning("ProductCatalog not found for {Id}", id);
+                _logger.LogDebug("ProductCatalog not found for {Id}", id);
                 return null;
             }
             return catalog;
@@ -57,7 +57,7 @@ namespace Mars.API.Services.Products
             var detail = await _detailRepository.GetByIdAsync(id, ct);
             if (detail is null)
             {
-                _logger.LogWarning("ProductDetail not found for {Id}", id);
+                _logger.LogDebug("ProductDetail not found for {Id}", id);
                 return null;
             }
             return detail;
@@ -80,7 +80,7 @@ namespace Mars.API.Services.Products
             var variants = await _variantRepository.GetByIdAsync(id, ct);
             if (variants is null)
             {
-                _logger.LogWarning("ProductSeriesVariants not found for {Id}", id);
+                _logger.LogDebug("ProductSeriesVariants not found for {Id}", id);
                 return null;
             }
 
@@ -105,14 +105,14 @@ namespace Mars.API.Services.Products
             var series = await _variantRepository.GetByIdAsync(id, ct);
             if (series is null)
             {
-                _logger.LogWarning("ProductSeriesVariants not found for {Id}", id);
+                _logger.LogDebug("ProductSeriesVariants not found for {Id}", id);
                 return null;
             }
 
             var variant = series.Variants.FirstOrDefault(v => v.Id == variantId);
             if (variant is null)
             {
-                _logger.LogWarning("Variant {VariantId} not found in series {Id}", variantId, id);
+                _logger.LogDebug("Variant {VariantId} not found in series {Id}", variantId, id);
                 return null;
             }
 

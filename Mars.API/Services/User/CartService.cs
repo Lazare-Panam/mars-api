@@ -90,7 +90,14 @@ namespace Mars.API.Services.User
 
             basket.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Set item {ProductId} quantity to {Quantity} in basket {BasketId} for user {UserId}", productId, quantity, basket.CustomerBasketId, userId);
+            if (quantity <= 0)
+            {
+                _logger.LogInformation("Removed item {ProductId} (quantity set to 0) from basket {BasketId} for user {UserId}", productId, basket.CustomerBasketId, userId);
+            }
+            else
+            {
+                _logger.LogInformation("Set item {ProductId} quantity to {Quantity} in basket {BasketId} for user {UserId}", productId, quantity, basket.CustomerBasketId, userId);
+            }
             return basket;
         }
 

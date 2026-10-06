@@ -32,7 +32,7 @@ namespace Mars.API.Services.Notification
             ArgumentException.ThrowIfNullOrWhiteSpace(htmlBody);
 
             // Recipient and subject aren't logged: both can contain personal data (address, company name).
-            _logger.LogInformation("Attempting to send email");
+            _logger.LogDebug("Attempting to send email");
 
             try
             {

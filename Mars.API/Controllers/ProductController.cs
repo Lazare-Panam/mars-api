@@ -19,12 +19,12 @@ namespace Mars.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCatalog(string id, CancellationToken ct)
         {
-            _logger.LogInformation("GetCatalog called for {Id}", id);
+            _logger.LogDebug("GetCatalog called for {Id}", id);
             var catalog = await _productService.GetCatalogByIdAsync(id, ct);
 
             if (catalog is null)
             {
-                _logger.LogWarning("Catalog not found for {Id}", id);
+                _logger.LogInformation("Catalog not found for {Id}", id);
                 return NotFound($"No catalog found for ID: {id}");
             }
 
@@ -34,12 +34,12 @@ namespace Mars.API.Controllers
         [HttpGet("{id}/detail")]
         public async Task<IActionResult> GetProductDetail(string id, CancellationToken ct)
         {
-            _logger.LogInformation("GetProductDetail called for {Id}", id);
+            _logger.LogDebug("GetProductDetail called for {Id}", id);
             var detail = await _productService.GetProductDetailAsync(id, ct);
 
             if (detail is null)
             {
-                _logger.LogWarning("Product detail not found for {Id}", id);
+                _logger.LogInformation("Product detail not found for {Id}", id);
                 return NotFound($"No detail found for ID: {id}");
             }
 
@@ -49,12 +49,12 @@ namespace Mars.API.Controllers
         [HttpGet("{id}/variants")]
         public async Task<IActionResult> GetProductVariants(string id, CancellationToken ct)
         {
-            _logger.LogInformation("GetProductVariants called for {Id}", id);
+            _logger.LogDebug("GetProductVariants called for {Id}", id);
             var variants = await _productService.GetProductVariantsAsync(id, ct);
 
             if (variants is null)
             {
-                _logger.LogWarning("Variants not found for {Id}", id);
+                _logger.LogInformation("Variants not found for {Id}", id);
                 return NotFound($"No variants found for ID: {id}");
             }
 
@@ -64,12 +64,12 @@ namespace Mars.API.Controllers
         [HttpGet("{id}/variants/{variantId}")]
         public async Task<IActionResult> GetProductVariant(string id, string variantId, CancellationToken ct)
         {
-            _logger.LogInformation("GetProductVariant called for {Id} / {VariantId}", id, variantId);
+            _logger.LogDebug("GetProductVariant called for {Id} / {VariantId}", id, variantId);
             var variant = await _productService.GetProductVariantAsync(id, variantId, ct);
 
             if (variant is null)
             {
-                _logger.LogWarning("Variant {VariantId} not found for {Id}", variantId, id);
+                _logger.LogInformation("Variant {VariantId} not found for {Id}", variantId, id);
                 return NotFound($"No variant {variantId} found for ID: {id}");
             }
 
@@ -78,7 +78,7 @@ namespace Mars.API.Controllers
         [HttpGet("stock")]
         public async Task<IActionResult> GetStockProducts(CancellationToken ct)
         {
-            _logger.LogInformation("GetStockProducts called");
+            _logger.LogDebug("GetStockProducts called");
             var stockProducts = await _productService.GetStockProductsAsync(ct);
 
             return Ok(stockProducts);

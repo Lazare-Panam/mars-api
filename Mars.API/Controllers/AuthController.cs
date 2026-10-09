@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Mars.API.Logging;
 using Mars.API.Models.Auth;
 using Mars.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -38,14 +39,15 @@ namespace Mars.API.Controllers
                 {
                     ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
                 }
+                // Field names only, never the submitted values.
+                _logger.LogInformation(LogEvents.ValidationFailed, "{Endpoint} rejected: invalid {Fields}",
+                    HttpContext.Request.Path.Value, validationResult.Errors.Select(e => e.PropertyName).Distinct());
                 return ValidationProblem(ModelState);
             }
-            _logger.LogInformation("Register called ");
             var existingUser = await _userManager.FindByEmailAsync(registerDTO.Email);
-            // Log: Input Validation Failures.
             if (existingUser != null)
             {
-                _logger.LogWarning("Registration failed: email is already registered to user {@UserId}", existingUser.Id);
+                _logger.LogWarning(LogEvents.RegistrationRejected, "Registration rejected: email is already registered to user {UserId}", existingUser.Id);
                 return Problem(
                     statusCode: StatusCodes.Status409Conflict,
                     title: "Email is already registered.",
@@ -68,7 +70,7 @@ namespace Mars.API.Controllers
             if(!result.Succeeded)
             {
                 // Error codes, not descriptions: descriptions can contain the username (the email).
-                _logger.LogWarning("Registration failed: {@ErrorCodes}", result.Errors.Select(e => e.Code));
+                _logger.LogWarning(LogEvents.RegistrationRejected, "Registration rejected: {ErrorCodes}", result.Errors.Select(e => e.Code));
                 return Problem(
                    statusCode: StatusCodes.Status400BadRequest,
                    title: "Registration failed.",
@@ -82,8 +84,8 @@ namespace Mars.API.Controllers
             }
 
             await _userManager.AddToRoleAsync(user, Roles.User);
-            _logger.LogInformation("User {@UserId} registered successfully", user.Id);
-            await _notificationService.HandleNewUserRegisteredAsync(
+            _logger.LogInformation(LogEvents.UserRegistered, "User {UserId} registered successfully", user.Id);
+            var notification = await _notificationService.HandleNewUserRegisteredAsync(
                 userName: $"{user.FirstName} {user.LastName}",
                 userEmail: user.Email,
                 userCompany: user.CompanyName,
@@ -91,7 +93,16 @@ namespace Mars.API.Controllers
                 userJobTitle: registerDTO.JobTitle,
                 registrationDate: DateTime.UtcNow.ToString("dd MMM yyyy")
             );
-            _logger.LogInformation("Notification sent for new user registration {@UserId}", user.Id);
+            // NotificationService already logged the error for any email that failed; this records the outcome per user.
+            if (notification.ReceiptSent && notification.InternalNotificationSent)
+            {
+                _logger.LogInformation("Registration emails sent for user {UserId}", user.Id);
+            }
+            else
+            {
+                _logger.LogWarning("Registration emails not all sent for user {UserId}: welcome {WelcomeSent}, internal {InternalSent}",
+                    user.Id, notification.ReceiptSent, notification.InternalNotificationSent);
+            }
             return Ok(new { message = "User registered successfully." });
         }
 
@@ -105,6 +116,9 @@ namespace Mars.API.Controllers
                 {
                     ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
                 }
+                // Field names only, never the submitted values.
+                _logger.LogInformation(LogEvents.ValidationFailed, "{Endpoint} rejected: invalid {Fields}",
+                    HttpContext.Request.Path.Value, validationResult.Errors.Select(e => e.PropertyName).Distinct());
                 return ValidationProblem(ModelState);
             }
 
@@ -112,7 +126,7 @@ namespace Mars.API.Controllers
             if (user == null)
             {
                 // No identifier: the attempted email may not belong to anyone (or be a typo of someone else's).
-                _logger.LogWarning("Login failed: user not found.");
+                _logger.LogWarning(LogEvents.LoginFailed, "Login failed: user not found");
                 return Problem(
                     statusCode: StatusCodes.Status401Unauthorized,
                     title: "Invalid email or password.",
@@ -122,7 +136,7 @@ namespace Mars.API.Controllers
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: true);
             if (result.IsLockedOut)
             {
-                _logger.LogWarning("Login failed for user {@UserId}: account is locked out.", user.Id);
+                _logger.LogWarning(LogEvents.AccountLockedOut, "Login failed for user {UserId}: account is locked out", user.Id);
                 return Problem(
                     statusCode: StatusCodes.Status401Unauthorized,
                     title: "Account locked. Try again later.",
@@ -132,7 +146,7 @@ namespace Mars.API.Controllers
 
             if (!result.Succeeded)
             {
-                _logger.LogWarning("Login failed for user {@UserId}: invalid password.", user.Id);
+                _logger.LogWarning(LogEvents.LoginFailed, "Login failed for user {UserId}: invalid password", user.Id);
                 return Problem(
                     statusCode: StatusCodes.Status401Unauthorized,
                     title: "Invalid email or password.",
@@ -141,7 +155,7 @@ namespace Mars.API.Controllers
             }
             var roles = await _userManager.GetRolesAsync(user);
             (string token, DateTime expiresAt) = _authService.CreateToken(user, roles);
-            _logger.LogInformation("User {@UserId} logged in successfully", user.Id);
+            _logger.LogInformation(LogEvents.LoginSucceeded, "User {UserId} logged in successfully", user.Id);
             return Ok(new
             {
                 token,
@@ -159,7 +173,7 @@ namespace Mars.API.Controllers
         public IActionResult Logout()
         {
             var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-            _logger.LogInformation("User {UserId} logged out", userId);
+            _logger.LogInformation(LogEvents.LoggedOut, "User {UserId} logged out", userId);
             return Ok(new { message = "Logged out. Please discard your token." });
         }
     }

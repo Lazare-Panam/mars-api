@@ -85,7 +85,7 @@ namespace Mars.API.Services.Notification
                 } 
 
                 using StreamReader reader = new StreamReader(stream);
-                _logger.LogInformation("Successfully loaded email template: {FileName}", fileName);
+                _logger.LogDebug("Successfully loaded email template: {FileName}", fileName);
                 return reader.ReadToEnd();
             }
             catch(FileNotFoundException ex)

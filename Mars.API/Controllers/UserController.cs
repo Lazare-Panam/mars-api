@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Mars.API.Logging;
+using FluentValidation;
 using Mars.API.MessageQueues;
 using Mars.API.Models.Auth;
 using Mars.API.Models.User;
@@ -39,6 +40,9 @@ namespace Mars.API.Controllers
                 {
                     ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
                 }
+                // Field names only, never the submitted values.
+                _logger.LogInformation(LogEvents.ValidationFailed, "{Endpoint} rejected: invalid {Fields}",
+                    HttpContext.Request.Path.Value, validationResult.Errors.Select(e => e.PropertyName).Distinct());
                 return ValidationProblem(ModelState);
             }
             var enquiry = new Enquiry

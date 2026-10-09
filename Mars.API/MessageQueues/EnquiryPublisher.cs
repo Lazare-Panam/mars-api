@@ -33,7 +33,7 @@ namespace Mars.API.MessageQueues
                 Subject = nameof(EnquiryReceivedMessage),
                 MessageId = enquiryId.ToString()
             };
-            _logger.LogInformation("Publishing EnquiryReceived message {MessageId} for enquiry {EnquiryId}", message.MessageId, enquiryId);
+            _logger.LogDebug("Publishing EnquiryReceived message {MessageId} for enquiry {EnquiryId}", message.MessageId, enquiryId);
             await pipeline.ExecuteAsync(async ct => await _sender.SendMessageAsync(message, ct),ct); 
         }
     }

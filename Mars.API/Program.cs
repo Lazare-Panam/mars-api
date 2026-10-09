@@ -12,6 +12,7 @@ using Mars.API.Services.Auth;
 using Mars.API.Services.Interfaces;
 using Mars.API.Services.Notification;
 using Mars.API.Services.Products;
+using Mars.API.Services.SeriesProducts;
 using Mars.API.Services.User;
 using Mars.API.Settings;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
@@ -186,6 +187,7 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ISeriesProductService, SeriesProductService>();
 builder.Services.Configure<ServiceBusSettings>(builder.Configuration.GetSection("ServiceBusSettings"));
 
 builder.Services.AddSingleton(sp =>

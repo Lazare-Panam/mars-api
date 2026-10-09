@@ -5,6 +5,7 @@ using Mars.API.Models.SeriesProducts.Dtos;
 using Mars.API.Repository.SQL;
 using Mars.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 
 namespace Mars.API.Services.SeriesProducts
 {
@@ -19,7 +20,7 @@ namespace Mars.API.Services.SeriesProducts
             _logger = logger;
         }
 
-        // Reusable projection so every product read shapes the same DTO (EF-translatable).
+        
         private static readonly Expression<Func<CatalogProduct, CatalogProductDto>> ToDto = p => new CatalogProductDto
         {
             ProductId = p.ProductId,
@@ -34,45 +35,18 @@ namespace Mars.API.Services.SeriesProducts
                 .ToList()
         };
 
-        private static readonly JsonSerializerOptions _certJsonOptions =
-            new() { PropertyNameCaseInsensitive = true };
+        public Task<bool> CategoryExistsAsync(int categoryId, CancellationToken ct) => _context.Categories.AnyAsync(c => c.CategoryId == categoryId, ct);
 
-        public async Task<IReadOnlyList<CategoryDto>> GetCategoriesAsync(CancellationToken ct)
-        {
-            // Load scalar columns then shape in memory (KeyFeatures/Certificates
-            // need string-splitting / JSON parsing that EF can't translate).
-            var rows = await _context.Categories.AsNoTracking()
-                .OrderBy(c => c.Name)
-                .ToListAsync(ct);
-
-            return rows.Select(c => new CategoryDto
-            {
-                CategoryId = c.CategoryId,
-                Name = c.Name,
-                CatalogUrl = c.CatalogUrl,
-                CadUrl = c.CadUrl,
-                Description = c.Description,
-                BodyMaterial = c.BodyMaterial,
-                SeatMaterial = c.SeatMaterial,
-                Design = c.Design,
-                TemperatureRange = c.TemperatureRange,
-                Approvals = c.Approvals,
-                DatasheetUrl = c.DatasheetUrl,
-                KeyFeatures = SplitLines(c.KeyFeatures),
-                Certificates = ParseCertificates(c.CertificatesJson),
-            }).ToList();
-        }
-
-        public async Task<ConfiguratorStateDto?> GetConfiguratorStateAsync(
-            int categoryId, IReadOnlyDictionary<string, string> selection, CancellationToken ct)
+        public async Task<ConfiguratorStateDto?> GetConfiguratorStateAsync(int categoryId, IReadOnlyDictionary<string, string> selection, CancellationToken ct)
         {
             var categoryExists = await _context.Categories.AnyAsync(c => c.CategoryId == categoryId, ct);
             if (!categoryExists)
             {
-                _logger.LogWarning("Category {CategoryId} not found when configuring", categoryId);
+                _logger.LogInformation("Category {CategoryId} not found when configuring", categoryId);
                 return null;
             }
 
+            // filterDefs joins FilterIds with their names, with navigation properties and innerjoin
             var filterDefs = await _context.CategoryFilters.AsNoTracking()
                 .Where(cf => cf.CategoryId == categoryId)
                 .OrderBy(cf => cf.SortOrder)
@@ -84,24 +58,43 @@ namespace Mars.API.Services.SeriesProducts
                 .Where(v => v.CategoryId == categoryId)
                 .Select(v => new { v.ProductId, FilterName = v.Filter.Name, v.Value })
                 .ToListAsync(ct);
+            var productSpecs = new Dictionary<int, Dictionary<string, string>>();
+            foreach (var row in rows)
+            {
+                if(!productSpecs.TryGetValue(row.ProductId, out var specs))
+                {
+                    specs = new Dictionary<string, string>();
+                    productSpecs[row.ProductId] = specs;
+                }
+                specs[row.FilterName] = row.Value;
+            }
 
-            var productSpecs = rows
-                .GroupBy(r => r.ProductId)
-                .ToDictionary(g => g.Key, g => g.ToDictionary(x => x.FilterName, x => x.Value));
             var allIds = productSpecs.Keys.ToList();
 
-            bool Matches(Dictionary<string, string> specs, string? ignore) =>
-                selection.All(kv => kv.Key == ignore
-                    || (specs.TryGetValue(kv.Key, out var v) && v == kv.Value));
+            bool MatchesSelection(Dictionary<string, string> specs, string? ignoreFilter)
+            {
+                foreach (var (filterName, pickedValue) in selection)
+                {
+                    if (filterName == ignoreFilter)
+                        continue;                       
 
-            var matchIds = allIds.Where(id => Matches(productSpecs[id], null)).ToList();
+                    if (!specs.TryGetValue(filterName, out var productValue))
+                        return false;                 
 
+                    if (!string.Equals(productValue, pickedValue, StringComparison.OrdinalIgnoreCase))
+                        return false;                   
+                }
+                return true;                            
+            }
+
+            var matchIds = allIds.Where(id => MatchesSelection(productSpecs[id], null)).ToList();
+            /*TODO*Rishik fix from here*/
             var options = new List<ConfiguratorOptionDto>();
             foreach (var fd in filterDefs)
             {
                 var allValues = rows.Where(r => r.FilterName == fd.Name).Select(r => r.Value).Distinct().ToList();
                 // Products matching every OTHER selected option -> which values of this filter stay reachable.
-                var reachable = allIds.Where(id => Matches(productSpecs[id], fd.Name)).ToHashSet();
+                var reachable = allIds.Where(id => MatchesSelection(productSpecs[id], fd.Name)).ToHashSet();
                 var availableValues = rows
                     .Where(r => r.FilterName == fd.Name && reachable.Contains(r.ProductId))
                     .Select(r => r.Value).ToHashSet();
@@ -142,34 +135,16 @@ namespace Mars.API.Services.SeriesProducts
             };
         }
 
-        private static List<string> SplitLines(string? value) =>
-            string.IsNullOrWhiteSpace(value)
-                ? []
-                : value.Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).ToList();
-
-        private List<CertificateDto> ParseCertificates(string? json)
-        {
-            if (string.IsNullOrWhiteSpace(json)) return [];
-            try
-            {
-                return JsonSerializer.Deserialize<List<CertificateDto>>(json, _certJsonOptions) ?? [];
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogWarning(ex, "Failed to parse CertificatesJson for a category");
-                return [];
-            }
-        }
-
         public async Task<IReadOnlyList<CategoryFilterDto>?> GetCategoryFiltersAsync(int categoryId, CancellationToken ct)
         {
-            var categoryExists = await _context.Categories.AnyAsync(c => c.CategoryId == categoryId, ct);
+            bool categoryExists = await CategoryExistsAsync(categoryId, ct);
             if (!categoryExists)
             {
-                _logger.LogWarning("Category {CategoryId} not found when loading filters", categoryId);
+                _logger.LogInformation("Category {CategoryId} not found when loading filters", categoryId);
                 return null;
             }
 
+            // filterDefs joins FilterIds with their names, with navigation properties and innerjoin
             var filterDefs = await _context.CategoryFilters.AsNoTracking()
                 .Where(cf => cf.CategoryId == categoryId)
                 .OrderBy(cf => cf.SortOrder)
@@ -182,15 +157,14 @@ namespace Mars.API.Services.SeriesProducts
                 .Distinct()
                 .ToListAsync(ct);
 
+            var valuesByFilter = values.ToLookup(v => v.FilterId, v => v.Value);
+
             return filterDefs.Select(fd => new CategoryFilterDto
             {
                 FilterId = fd.FilterId,
                 Name = fd.Name,
                 SortOrder = fd.SortOrder,
-                Values = values.Where(v => v.FilterId == fd.FilterId)
-                               .Select(v => v.Value)
-                               .OrderBy(x => x)
-                               .ToList()
+                Values = valuesByFilter[fd.FilterId].OrderBy(v => v).ToList()
             }).ToList();
         }
 
@@ -199,35 +173,33 @@ namespace Mars.API.Services.SeriesProducts
             var categoryExists = await _context.Categories.AnyAsync(c => c.CategoryId == categoryId, ct);
             if (!categoryExists)
             {
-                _logger.LogWarning("Category {CategoryId} not found when loading products", categoryId);
+                _logger.LogInformation("Category {CategoryId} not found when loading products", categoryId);
                 return null;
             }
-
-            var query = _context.CatalogProducts.AsNoTracking()
-                .Where(p => p.CategoryId == categoryId);
+            var query = _context.CatalogProducts.AsNoTracking().Where(p => p.CategoryId == categoryId);
 
             if (filters is not null)
             {
                 foreach (var pair in filters)
                 {
-                    // Locals so each predicate captures its own value, not the loop variable.
                     var filterName = pair.Key;
                     var filterValue = pair.Value;
                     query = query.Where(p => p.FilterValues.Any(v => v.Filter.Name == filterName && v.Value == filterValue));
                 }
             }
 
-            return await query
+            var products =  await query
                 .OrderBy(p => p.PartNumber)
                 .Select(ToDto)
                 .ToListAsync(ct);
+            return products;
         }
 
         public async Task<CatalogProductDto?> GetProductByPartNumberAsync(string partNumber, CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(partNumber))
             {
-                _logger.LogWarning("GetProductByPartNumberAsync called with empty part number");
+                _logger.LogInformation("GetProductByPartNumberAsync called with empty part number");
                 return null;
             }
 

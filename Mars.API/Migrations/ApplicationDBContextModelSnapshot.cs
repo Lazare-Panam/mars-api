@@ -278,6 +278,190 @@ namespace Mars.API.Migrations
                     b.ToTable("QuoteRequestItems");
                 });
 
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.CatalogProduct", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DetailDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("FamilyDescription")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<string>("PartNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ProductStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("ProductId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("PartNumber")
+                        .IsUnique();
+
+                    b.ToTable("CatalogProducts");
+                });
+
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.Category", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
+
+                    b.Property<string>("Approvals")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("BodyMaterial")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CadUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<string>("CatalogUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<string>("CertificatesJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DatasheetUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Design")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("KeyFeatures")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SeatMaterial")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TemperatureRange")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("CategoryId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.CategoryFilter", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FilterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("CategoryId", "FilterId");
+
+                    b.HasIndex("FilterId");
+
+                    b.ToTable("CategoryFilters");
+                });
+
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.Filter", b =>
+                {
+                    b.Property<int>("FilterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FilterId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("FilterId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Filters");
+                });
+
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.ProductFilterValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FilterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FilterId");
+
+                    b.HasIndex("CategoryId", "FilterId");
+
+                    b.HasIndex("ProductId", "CategoryId");
+
+                    b.HasIndex("ProductId", "FilterId", "Value")
+                        .IsUnique();
+
+                    b.ToTable("ProductFilterValues");
+                });
+
             modelBuilder.Entity("Mars.API.Models.User.CreditLineApplication", b =>
                 {
                     b.Property<int>("ApplicationId")
@@ -618,6 +802,62 @@ namespace Mars.API.Migrations
                     b.Navigation("QuoteRequest");
                 });
 
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.CatalogProduct", b =>
+                {
+                    b.HasOne("Mars.API.Models.SeriesProducts.Category", "Category")
+                        .WithMany("Products")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.CategoryFilter", b =>
+                {
+                    b.HasOne("Mars.API.Models.SeriesProducts.Category", "Category")
+                        .WithMany("CategoryFilters")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mars.API.Models.SeriesProducts.Filter", "Filter")
+                        .WithMany("CategoryFilters")
+                        .HasForeignKey("FilterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Filter");
+                });
+
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.ProductFilterValue", b =>
+                {
+                    b.HasOne("Mars.API.Models.SeriesProducts.Filter", "Filter")
+                        .WithMany()
+                        .HasForeignKey("FilterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mars.API.Models.SeriesProducts.CategoryFilter", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId", "FilterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mars.API.Models.SeriesProducts.CatalogProduct", "Product")
+                        .WithMany("FilterValues")
+                        .HasForeignKey("ProductId", "CategoryId")
+                        .HasPrincipalKey("ProductId", "CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Filter");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -677,6 +917,23 @@ namespace Mars.API.Migrations
             modelBuilder.Entity("Mars.API.Models.Basket.QuoteRequest", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.CatalogProduct", b =>
+                {
+                    b.Navigation("FilterValues");
+                });
+
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.Category", b =>
+                {
+                    b.Navigation("CategoryFilters");
+
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Mars.API.Models.SeriesProducts.Filter", b =>
+                {
+                    b.Navigation("CategoryFilters");
                 });
 #pragma warning restore 612, 618
         }

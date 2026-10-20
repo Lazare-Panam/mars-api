@@ -1,6 +1,7 @@
 ﻿using Mars.API.EntityConfigurations;
 using Mars.API.Models.Auth;
 using Mars.API.Models.Basket;
+using Mars.API.Models.SeriesProducts;
 using Mars.API.Models.User;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,11 @@ namespace Mars.API.Repository.SQL
         public DbSet<QuoteRequest> QuoteRequests => Set<QuoteRequest>();
         public DbSet<QuoteRequestItem> QuoteRequestItems => Set<QuoteRequestItem>();
         public DbSet<CreditLineApplication> CreditLineApplications => Set<CreditLineApplication>();
+        public DbSet<Category> Categories => Set<Category>();
+        public DbSet<Filter> Filters => Set<Filter>();
+        public DbSet<CategoryFilter> CategoryFilters => Set<CategoryFilter>();
+        public DbSet<CatalogProduct> CatalogProducts => Set<CatalogProduct>();
+        public DbSet<ProductFilterValue> ProductFilterValues => Set<ProductFilterValue>();
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -29,6 +35,11 @@ namespace Mars.API.Repository.SQL
             builder.ApplyConfiguration(new QuoteRequestConfiguration());
             builder.ApplyConfiguration(new QuoteRequestItemConfiguration());
             builder.ApplyConfiguration(new CreditLineApplicationConfiguration());
+            builder.ApplyConfiguration(new CategoryConfiguration());
+            builder.ApplyConfiguration(new FilterConfiguration());
+            builder.ApplyConfiguration(new CategoryFilterConfiguration());
+            builder.ApplyConfiguration(new CatalogProductConfiguration());
+            builder.ApplyConfiguration(new ProductFilterValueConfiguration());
         }
     }
 }

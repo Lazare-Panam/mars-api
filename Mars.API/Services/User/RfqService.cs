@@ -1,5 +1,6 @@
 ﻿
 using Mars.API.Models.Basket;
+using Mars.API.Models.User;
 using Mars.API.Repository.Interfaces;
 using Mars.API.Repository.SQL;
 using Mars.API.Services.Interfaces;
@@ -54,6 +55,5 @@ namespace Mars.API.Services.User
             await _notificationService.HandleNewRfqSubmittedAsync(userName, userEmail, userCompany, rfq.QuoteRequestId, rfq.Items);
             return rfq;
         }
-       
     }
 }

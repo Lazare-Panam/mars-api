@@ -19,7 +19,6 @@ namespace Mars.API.Controllers
         private readonly ApplicationDBContext _dbContext;
         private readonly IEnquiryPublisher _enquiryPublisher;
         private readonly ILogger<UserController> _logger;
-
         private readonly ICreditApplicationService _creditApplicationService;
         
         public UserController(ApplicationDBContext dbContext, IEnquiryPublisher enquiryPublisher, ILogger<UserController> logger, ICreditApplicationService creditApplicationService)

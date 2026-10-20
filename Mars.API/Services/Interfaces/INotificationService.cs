@@ -32,5 +32,12 @@ namespace Mars.API.Services.Interfaces
         /// </summary>
         /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
         Task<NotificationResult> HandleNewCreditApplicationAsync(string contactName, string applicantEmail, string companyName, decimal creditLimitRequested, string currency, DateTimeOffset submittedAtUtc);
+
+        /// <summary>
+        /// Sends the "you're on the list" email (with catalogue + stock-list links) to the
+        /// requester, and an internal notification to staff. Each email is sent independently.
+        /// </summary>
+        /// <returns>A <see cref="NotificationResult"/> indicating which of the two emails were sent successfully.</returns>
+        Task<NotificationResult> HandleStockListRequestAsync(string name, string email, string phone, DateTimeOffset submittedAtUtc);
     }
 }

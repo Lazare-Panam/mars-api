@@ -212,5 +212,37 @@ namespace Mars.API.Services.Notification
             var body = _templateService.GetCreditApplicationInternalHtml(companyName, contactName, creditLimitRequested, currency, submittedAtUtc, _emailSettings.AdminPortalUrl);
             await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"New Credit Application from {companyName}", body);
         }
+
+        /// <summary>
+        /// Sends the requester confirmation (catalogue + stock-list links) and the internal
+        /// staff notification for a new stock-list request. Each email is sent independently,
+        /// so a failure sending one does not prevent the other.
+        /// </summary>
+        public async Task<NotificationResult> HandleStockListRequestAsync(string name, string email, string phone, DateTimeOffset submittedAtUtc)
+        {
+            var result = new NotificationResult();
+            try
+            {
+                var body = _templateService.GetStockListReceiptHtml(name, _emailSettings.CatalogueUrl, _emailSettings.StockListUrl);
+                await _emailService.SendEmailAsync(email, "Your MARS stock list & catalogue", body);
+                result.ReceiptSent = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send stock-list receipt");
+            }
+
+            try
+            {
+                var body = _templateService.GetStockListInternalHtml(name, email, phone, submittedAtUtc);
+                await _emailService.SendEmailAsync(_emailSettings.InternalAddressEmail, $"New stock-list request from {name}", body);
+                result.InternalNotificationSent = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send internal stock-list notification");
+            }
+            return result;
+        }
     }
 }

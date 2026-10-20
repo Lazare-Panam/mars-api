@@ -52,5 +52,17 @@ namespace Mars.API.Services.Interfaces
         /// <param name="adminUrl">Fully-qualified link to the admin portal; caller-supplied from configuration, not user input.</param>
         /// <returns>Rendered HTML with the application details substituted into the template.</returns>
         string GetCreditApplicationInternalHtml(string companyName, string contactName, decimal creditLimitRequested, string currency, DateTimeOffset submittedAtUtc, string adminUrl);
+
+        /// <summary>
+        /// Builds the HTML body for the confirmation email sent to someone who requested the stock list.
+        /// </summary>
+        /// <param name="catalogueUrl">Public catalogue PDF link; from configuration, not user input.</param>
+        /// <param name="stockListUrl">Public stock-list PDF link; from configuration, not user input.</param>
+        string GetStockListReceiptHtml(string name, string catalogueUrl, string stockListUrl);
+
+        /// <summary>
+        /// Builds the HTML body for the internal notification email alerting staff to a new stock-list request.
+        /// </summary>
+        string GetStockListInternalHtml(string name, string email, string phone, DateTimeOffset submittedAtUtc);
     }
 }

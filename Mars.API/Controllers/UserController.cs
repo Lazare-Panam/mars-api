@@ -21,13 +21,15 @@ namespace Mars.API.Controllers
         private readonly ILogger<UserController> _logger;
 
         private readonly ICreditApplicationService _creditApplicationService;
-        
-        public UserController(ApplicationDBContext dbContext, IEnquiryPublisher enquiryPublisher, ILogger<UserController> logger, ICreditApplicationService creditApplicationService)
+        private readonly IStockListService _stockListService;
+
+        public UserController(ApplicationDBContext dbContext, IEnquiryPublisher enquiryPublisher, ILogger<UserController> logger, ICreditApplicationService creditApplicationService, IStockListService stockListService)
         {
             _dbContext = dbContext;
             _enquiryPublisher = enquiryPublisher;
             _logger = logger;
             _creditApplicationService = creditApplicationService;
+            _stockListService = stockListService;
         }
 
         [HttpPost("enquiry")]
@@ -81,6 +83,26 @@ namespace Mars.API.Controllers
                 message = "Credit application submitted successfully.",
                 application = created
             });
+        }
+
+        [HttpPost("stock-list")]
+        public async Task<IActionResult> RequestStockList(StockListRequestDTO request, CancellationToken cancellationToken, IValidator<StockListRequestDTO> validator)
+        {
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+                // Field names only, never the submitted values.
+                _logger.LogInformation(LogEvents.ValidationFailed, "{Endpoint} rejected: invalid {Fields}",
+                    HttpContext.Request.Path.Value, validationResult.Errors.Select(e => e.PropertyName).Distinct());
+                return ValidationProblem(ModelState);
+            }
+
+            await _stockListService.HandleStockListRequestAsync(request, cancellationToken);
+            return Ok(new { message = "You're on the list. Check your inbox for the stock list and catalogue." });
         }
     }
 }

@@ -204,6 +204,42 @@ namespace Mars.API.Services.Notification
         }
 
         /// <summary>
+        /// Builds the HTML body for the confirmation email sent to someone who requested the stock list.
+        /// </summary>
+        /// <returns>Rendered HTML with the requester's name and the catalogue/stock-list links substituted.</returns>
+        public string GetStockListReceiptHtml(string name, string catalogueUrl, string stockListUrl)
+        {
+            string htmlContent = LoadTemplate("StockListRequest.html");
+            var replacements = new Dictionary<string, string>
+            {
+                // User-supplied name crosses into HTML email output, so encode it.
+                { "{{Name}}", WebUtility.HtmlEncode(name) },
+                // URLs come from configuration (trusted), not the request body.
+                { "{{CatalogueUrl}}", catalogueUrl ?? string.Empty },
+                { "{{StockListUrl}}", stockListUrl ?? string.Empty },
+            };
+            return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
+        /// Builds the HTML body for the internal notification email alerting staff to a new stock-list request.
+        /// </summary>
+        /// <returns>Rendered HTML with the requester's details substituted into the template.</returns>
+        public string GetStockListInternalHtml(string name, string email, string phone, DateTimeOffset submittedAtUtc)
+        {
+            string htmlContent = LoadTemplate("InternalStockListRequest.html");
+            var replacements = new Dictionary<string, string>
+            {
+                // All three are user-supplied, so encode before embedding in HTML.
+                { "{{Name}}", WebUtility.HtmlEncode(name) },
+                { "{{Email}}", WebUtility.HtmlEncode(email) },
+                { "{{Phone}}", WebUtility.HtmlEncode(phone) },
+                { "{{SubmittedDate}}", submittedAtUtc.ToString("dd MMM yyyy HH:mm 'UTC'") },
+            };
+            return replaceTokens(htmlContent, replacements);
+        }
+
+        /// <summary>
         /// Renders one HTML table row per quote request item. Product identifiers and descriptions come
         /// from the catalog, not the current request, but are still HTML-encoded before being embedded in
         /// the email body since this content is not otherwise validated as safe markup.

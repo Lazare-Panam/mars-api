@@ -19,6 +19,8 @@
     <None Remove="EmailTemplates\NewRfqRequest.html" />
     <None Remove="EmailTemplates\InternalNewCreditApplication.html" />
     <None Remove="EmailTemplates\NewCreditApplication.html" />
+    <None Remove="EmailTemplates\StockListRequest.html" />
+    <None Remove="EmailTemplates\InternalStockListRequest.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,6 +46,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="EmailTemplates\NewCreditApplication.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EmailTemplates\StockListRequest.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EmailTemplates\InternalStockListRequest.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

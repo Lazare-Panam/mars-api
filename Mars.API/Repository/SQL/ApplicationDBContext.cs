@@ -26,6 +26,7 @@ namespace Mars.API.Repository.SQL
         public DbSet<CategoryFilter> CategoryFilters => Set<CategoryFilter>();
         public DbSet<CatalogProduct> CatalogProducts => Set<CatalogProduct>();
         public DbSet<ProductFilterValue> ProductFilterValues => Set<ProductFilterValue>();
+        public DbSet<StockListRequest> StockListRequests => Set<StockListRequest>();
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -40,6 +41,7 @@ namespace Mars.API.Repository.SQL
             builder.ApplyConfiguration(new CategoryFilterConfiguration());
             builder.ApplyConfiguration(new CatalogProductConfiguration());
             builder.ApplyConfiguration(new ProductFilterValueConfiguration());
+            builder.ApplyConfiguration(new StockListRequestConfigurator());
         }
     }
 }

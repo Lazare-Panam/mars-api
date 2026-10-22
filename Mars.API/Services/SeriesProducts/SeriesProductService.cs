@@ -20,7 +20,56 @@ namespace Mars.API.Services.SeriesProducts
             _logger = logger;
         }
 
-        
+        // Reusable options for parsing the certificates JSON column.
+        private static readonly JsonSerializerOptions _certJsonOptions =
+            new() { PropertyNameCaseInsensitive = true };
+
+        public async Task<IReadOnlyList<CategoryDto>> GetCategoriesAsync(CancellationToken ct)
+        {
+            // Load scalar columns then shape in memory (KeyFeatures/Certificates
+            // need string-splitting / JSON parsing that EF can't translate).
+            var rows = await _context.Categories.AsNoTracking()
+                .OrderBy(c => c.Name)
+                .ToListAsync(ct);
+
+            return rows.Select(c => new CategoryDto
+            {
+                CategoryId = c.CategoryId,
+                Name = c.Name,
+                CatalogUrl = c.CatalogUrl,
+                CadUrl = c.CadUrl,
+                Description = c.Description,
+                BodyMaterial = c.BodyMaterial,
+                SeatMaterial = c.SeatMaterial,
+                Design = c.Design,
+                TemperatureRange = c.TemperatureRange,
+                Approvals = c.Approvals,
+                DatasheetUrl = c.DatasheetUrl,
+                KeyFeatures = SplitLines(c.KeyFeatures),
+                Certificates = ParseCertificates(c.CertificatesJson),
+            }).ToList();
+        }
+
+        private static List<string> SplitLines(string? value) =>
+            string.IsNullOrWhiteSpace(value)
+                ? []
+                : value.Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).ToList();
+
+        private List<CertificateDto> ParseCertificates(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json)) return [];
+            try
+            {
+                return JsonSerializer.Deserialize<List<CertificateDto>>(json, _certJsonOptions) ?? [];
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Failed to parse CertificatesJson for a category");
+                return [];
+            }
+        }
+
+
         private static readonly Expression<Func<CatalogProduct, CatalogProductDto>> ToDto = p => new CatalogProductDto
         {
             ProductId = p.ProductId,

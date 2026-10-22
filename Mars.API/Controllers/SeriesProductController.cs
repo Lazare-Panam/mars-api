@@ -16,6 +16,15 @@ namespace Mars.API.Controllers
             _logger = logger;
         }
 
+        // GET api/SeriesProduct/categories  -> all series/categories (drives the series list + name lookup)
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategories(CancellationToken ct)
+        {
+            _logger.LogInformation("GetCategories called");
+            var categories = await _seriesProductService.GetCategoriesAsync(ct);
+            return Ok(categories);
+        }
+
         // GET api/SeriesProduct/categories/{categoryId}/filters  -> the filter sidebar for a series
         [HttpGet("categories/{categoryId:int}/filters")]
         public async Task<IActionResult> GetCategoryFilters(int categoryId, CancellationToken ct)

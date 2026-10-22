@@ -4,6 +4,9 @@ namespace Mars.API.Services.Interfaces
 {
     public interface ISeriesProductService
     {
+        Task<IReadOnlyList<CategoryDto>> GetCategoriesAsync(CancellationToken ct);
+
+        // Returns null if the category does not exist.
         Task<IReadOnlyList<CategoryFilterDto>?> GetCategoryFiltersAsync(int categoryId, CancellationToken ct);
 
         // Returns null if the category does not exist. Optional faceted filtering:

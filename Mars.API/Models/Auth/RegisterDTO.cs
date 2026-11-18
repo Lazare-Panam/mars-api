@@ -13,5 +13,8 @@ namespace Mars.API.Models.Auth
         public string CompanyName { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
         public string JobTitle { get; set; } = string.Empty;
+
+        /// <summary>Cloudflare Turnstile token from the frontend widget. Verified before the account is created.</summary>
+        public string? CaptchaToken { get; set; }
     }
 }

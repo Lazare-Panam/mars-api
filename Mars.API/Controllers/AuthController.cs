@@ -19,13 +19,15 @@ namespace Mars.API.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly INotificationService _notificationService;
-        public AuthController(IAuthService authService, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, INotificationService notificationService)
+        private readonly ITurnstileService _turnstileService;
+        public AuthController(IAuthService authService, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, INotificationService notificationService, ITurnstileService turnstileService)
         {
             _authService = authService;
             _logger = logger;
             _userManager = userManager;
             _signInManager = signInManager;
             _notificationService = notificationService;
+            _turnstileService = turnstileService;
         }
 
         [HttpPost("register")]
@@ -44,6 +46,18 @@ namespace Mars.API.Controllers
                     HttpContext.Request.Path.Value, validationResult.Errors.Select(e => e.PropertyName).Distinct());
                 return ValidationProblem(ModelState);
             }
+
+            // Bot check before creating any account.
+            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var captchaValid = await _turnstileService.VerifyAsync(registerDTO.CaptchaToken, clientIp, HttpContext.RequestAborted);
+            if (!captchaValid)
+            {
+                _logger.LogInformation(LogEvents.ValidationFailed, "{Endpoint} rejected: captcha verification failed",
+                    HttpContext.Request.Path.Value);
+                ModelState.AddModelError("CaptchaToken", "Captcha verification failed.");
+                return ValidationProblem(ModelState);
+            }
+
             var existingUser = await _userManager.FindByEmailAsync(registerDTO.Email);
             if (existingUser != null)
             {

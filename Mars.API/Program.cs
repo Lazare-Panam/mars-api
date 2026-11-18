@@ -29,6 +29,7 @@ using Polly;
 using Polly.Retry;
 using Serilog;
 using System.Text;
+using System.Threading.RateLimiting;
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -91,6 +92,26 @@ builder.Services.AddScoped<IStockProductRepository, StockProductRepository>();
 builder.Services.AddScoped<IRfqService, RfqService>();
 builder.Services.AddScoped<ICreditApplicationService, CreditApplicationService>();
 builder.Services.AddScoped<IStockListService, StockListService>();
+builder.Services.AddOptions<TurnstileSettings>().Bind(builder.Configuration.GetSection(nameof(TurnstileSettings)));
+builder.Services.AddHttpClient<ITurnstileService, TurnstileService>();
+builder.Services.AddRateLimiter(options =>
+{
+    // Blocked callers get 429 Too Many Requests (not the default 503).
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Named policy applied ONLY to the enquiry endpoint via [EnableRateLimiting("enquiry")].
+    // Partition per client IP: each IP gets its own 5-per-minute bucket.
+    options.AddPolicy("enquiry", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 5,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+});
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddResiliencePipeline("azureServiceBus", builder =>
 {
@@ -252,6 +273,7 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("MarsPolicy");
+app.UseRateLimiter();
 app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();

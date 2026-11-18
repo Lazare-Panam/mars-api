@@ -8,6 +8,7 @@ using Mars.API.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.ComponentModel.DataAnnotations;
 
 namespace Mars.API.Controllers
@@ -22,17 +23,20 @@ namespace Mars.API.Controllers
 
         private readonly ICreditApplicationService _creditApplicationService;
         private readonly IStockListService _stockListService;
+        private readonly ITurnstileService _turnstileService;
 
-        public UserController(ApplicationDBContext dbContext, IEnquiryPublisher enquiryPublisher, ILogger<UserController> logger, ICreditApplicationService creditApplicationService, IStockListService stockListService)
+        public UserController(ApplicationDBContext dbContext, IEnquiryPublisher enquiryPublisher, ILogger<UserController> logger, ICreditApplicationService creditApplicationService, IStockListService stockListService, ITurnstileService turnstileService)
         {
             _dbContext = dbContext;
             _enquiryPublisher = enquiryPublisher;
             _logger = logger;
             _creditApplicationService = creditApplicationService;
             _stockListService = stockListService;
+            _turnstileService = turnstileService;
         }
 
         [HttpPost("enquiry")]
+        [EnableRateLimiting("enquiry")]
         public async Task<IActionResult> UserEnquiry(EnquiryRequest enquiryRequest, CancellationToken cancellationToken , IValidator<EnquiryRequest> validator)
         {
             var validationResult = await validator.ValidateAsync(enquiryRequest, cancellationToken);
@@ -47,6 +51,18 @@ namespace Mars.API.Controllers
                     HttpContext.Request.Path.Value, validationResult.Errors.Select(e => e.PropertyName).Distinct());
                 return ValidationProblem(ModelState);
             }
+
+            // Bot check: verify the Turnstile token before doing any work (DB write / notification).
+            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var captchaValid = await _turnstileService.VerifyAsync(enquiryRequest.CaptchaToken, clientIp, cancellationToken);
+            if (!captchaValid)
+            {
+                _logger.LogInformation(LogEvents.ValidationFailed, "{Endpoint} rejected: captcha verification failed",
+                    HttpContext.Request.Path.Value);
+                ModelState.AddModelError("CaptchaToken", "Captcha verification failed.");
+                return ValidationProblem(ModelState);
+            }
+
             var enquiry = new Enquiry
             {
                 Id = Guid.NewGuid(),

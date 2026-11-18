@@ -1,0 +1,135 @@
+-- Series F306M (metal-seated high-pressure 3-piece, quote-only Price NULL). Run from file (SSMS). Self-cleaning on re-run.
+IF NOT EXISTS (SELECT 1 FROM Categories WHERE Name = N'Series F306M')
+    INSERT INTO Categories (Name, Description, BodyMaterial, SeatMaterial, Design, KeyFeatures)
+    VALUES (N'Series F306M',
+        N'The Mars Series F306M is a 3-piece, direct-mount, metal-seated high-pressure ball valve rated 3000 PSI, full port, in sizes 1/4" to 2". CF8M or WCB body with SS316+Stellite seats, a Stellite ball, in threaded, butt-weld or socket-weld ends.',
+        N'CF8M / WCB', N'SS316 + Stellite', N'Three Piece, Direct Mount, Metal Seated, Full Port, High Pressure',
+        N'3-piece direct mount metal seated design
+Full port high pressure
+Pressure rating: 3000 PSI
+Ends: Threaded, Butt Weld, Socket Weld
+Body: CF8M, WCB
+Seats: SS316 + Stellite
+Ball: Stellite
+Size 1/4" to 2"');
+
+DECLARE @SeriesName nvarchar(100) = N'Series F306M';
+DECLARE @CategoryId int = (SELECT CategoryId FROM Categories WHERE Name = @SeriesName);
+
+-- Idempotent: clear any prior rows for this series so re-running always yields a clean set.
+DELETE FROM ProductFilterValues WHERE CategoryId = @CategoryId;
+DELETE FROM CatalogProducts WHERE CategoryId = @CategoryId;
+DELETE FROM CategoryFilters WHERE CategoryId = @CategoryId;
+
+INSERT INTO Filters (Name) SELECT v.Name FROM (VALUES (N'Ends'),(N'Size'),(N'Body')) AS v(Name)
+WHERE NOT EXISTS (SELECT 1 FROM Filters f WHERE f.Name = v.Name);
+
+INSERT INTO CategoryFilters (CategoryId, FilterId, SortOrder)
+SELECT @CategoryId, f.FilterId, v.SortOrder FROM (VALUES (N'Ends',0),(N'Size',1),(N'Body',2)) AS v(FilterName, SortOrder)
+JOIN Filters f ON f.Name = v.FilterName WHERE NOT EXISTS (SELECT 1 FROM CategoryFilters cf WHERE cf.CategoryId=@CategoryId AND cf.FilterId=f.FilterId);
+
+INSERT INTO CatalogProducts (PartNumber, CategoryId, ProductStatus, FamilyDescription, DetailDescription, ImageUrl, Price) VALUES
+(N'VF306M-1-4IN-THREADED-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-4IN-THREADED-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-4IN-BW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-4IN-BW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-4IN-SW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-4IN-SW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-8IN-THREADED-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 3/8"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-8IN-THREADED-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body WCB, Seat SS316 + Stellite, Ball Stellite, 3/8"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-8IN-BW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 3/8"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-8IN-BW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 3/8"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-8IN-SW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 3/8"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-8IN-SW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 3/8"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-2IN-THREADED-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-2IN-THREADED-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-2IN-BW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-2IN-BW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-2IN-SW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-2IN-SW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-4IN-THREADED-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 3/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-4IN-THREADED-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body WCB, Seat SS316 + Stellite, Ball Stellite, 3/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-4IN-BW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 3/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-4IN-BW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 3/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-4IN-SW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 3/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-3-4IN-SW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 3/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1IN-THREADED-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1IN-THREADED-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1IN-BW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1IN-BW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1IN-SW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1IN-SW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-4IN-THREADED-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-4IN-THREADED-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-4IN-BW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-4IN-BW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-4IN-SW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-4IN-SW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1 1/4"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-2IN-THREADED-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-2IN-THREADED-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-2IN-BW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-2IN-BW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-2IN-SW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 1 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-1-1-2IN-SW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 1 1/2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-2IN-THREADED-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-2IN-THREADED-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Threaded, Body WCB, Seat SS316 + Stellite, Ball Stellite, 2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-2IN-BW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-2IN-BW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Butt Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-2IN-SW-CF8M', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body CF8M, Seat SS316 + Stellite, Ball Stellite, 2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL),
+(N'VF306M-2IN-SW-WCB', @CategoryId, N'Active', N'Mars Series F306M Metal Seated High Pressure Ball Valve', N'VF306M - 3-PC Direct Mount Metal Seated Ball Valve, Full Port, High Pressure, 3000 PSI, Socket Weld, Body WCB, Seat SS316 + Stellite, Ball Stellite, 2"', N'https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/high-pressure/f306.jpg', NULL);
+
+INSERT INTO ProductFilterValues (ProductId, CategoryId, FilterId, Value)
+SELECT p.ProductId, p.CategoryId, f.FilterId, v.Value FROM CatalogProducts p
+JOIN (VALUES
+  (N'VF306M-1-4IN-THREADED-CF8M',N'Size',N'1/4"'),(N'VF306M-1-4IN-THREADED-CF8M',N'Ends',N'Threaded'),(N'VF306M-1-4IN-THREADED-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-4IN-THREADED-WCB',N'Size',N'1/4"'),(N'VF306M-1-4IN-THREADED-WCB',N'Ends',N'Threaded'),(N'VF306M-1-4IN-THREADED-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-4IN-BW-CF8M',N'Size',N'1/4"'),(N'VF306M-1-4IN-BW-CF8M',N'Ends',N'Butt Weld'),(N'VF306M-1-4IN-BW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-4IN-BW-WCB',N'Size',N'1/4"'),(N'VF306M-1-4IN-BW-WCB',N'Ends',N'Butt Weld'),(N'VF306M-1-4IN-BW-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-4IN-SW-CF8M',N'Size',N'1/4"'),(N'VF306M-1-4IN-SW-CF8M',N'Ends',N'Socket Weld'),(N'VF306M-1-4IN-SW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-4IN-SW-WCB',N'Size',N'1/4"'),(N'VF306M-1-4IN-SW-WCB',N'Ends',N'Socket Weld'),(N'VF306M-1-4IN-SW-WCB',N'Body',N'WCB'),
+  (N'VF306M-3-8IN-THREADED-CF8M',N'Size',N'3/8"'),(N'VF306M-3-8IN-THREADED-CF8M',N'Ends',N'Threaded'),(N'VF306M-3-8IN-THREADED-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-3-8IN-THREADED-WCB',N'Size',N'3/8"'),(N'VF306M-3-8IN-THREADED-WCB',N'Ends',N'Threaded'),(N'VF306M-3-8IN-THREADED-WCB',N'Body',N'WCB'),
+  (N'VF306M-3-8IN-BW-CF8M',N'Size',N'3/8"'),(N'VF306M-3-8IN-BW-CF8M',N'Ends',N'Butt Weld'),(N'VF306M-3-8IN-BW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-3-8IN-BW-WCB',N'Size',N'3/8"'),(N'VF306M-3-8IN-BW-WCB',N'Ends',N'Butt Weld'),(N'VF306M-3-8IN-BW-WCB',N'Body',N'WCB'),
+  (N'VF306M-3-8IN-SW-CF8M',N'Size',N'3/8"'),(N'VF306M-3-8IN-SW-CF8M',N'Ends',N'Socket Weld'),(N'VF306M-3-8IN-SW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-3-8IN-SW-WCB',N'Size',N'3/8"'),(N'VF306M-3-8IN-SW-WCB',N'Ends',N'Socket Weld'),(N'VF306M-3-8IN-SW-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-2IN-THREADED-CF8M',N'Size',N'1/2"'),(N'VF306M-1-2IN-THREADED-CF8M',N'Ends',N'Threaded'),(N'VF306M-1-2IN-THREADED-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-2IN-THREADED-WCB',N'Size',N'1/2"'),(N'VF306M-1-2IN-THREADED-WCB',N'Ends',N'Threaded'),(N'VF306M-1-2IN-THREADED-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-2IN-BW-CF8M',N'Size',N'1/2"'),(N'VF306M-1-2IN-BW-CF8M',N'Ends',N'Butt Weld'),(N'VF306M-1-2IN-BW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-2IN-BW-WCB',N'Size',N'1/2"'),(N'VF306M-1-2IN-BW-WCB',N'Ends',N'Butt Weld'),(N'VF306M-1-2IN-BW-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-2IN-SW-CF8M',N'Size',N'1/2"'),(N'VF306M-1-2IN-SW-CF8M',N'Ends',N'Socket Weld'),(N'VF306M-1-2IN-SW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-2IN-SW-WCB',N'Size',N'1/2"'),(N'VF306M-1-2IN-SW-WCB',N'Ends',N'Socket Weld'),(N'VF306M-1-2IN-SW-WCB',N'Body',N'WCB'),
+  (N'VF306M-3-4IN-THREADED-CF8M',N'Size',N'3/4"'),(N'VF306M-3-4IN-THREADED-CF8M',N'Ends',N'Threaded'),(N'VF306M-3-4IN-THREADED-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-3-4IN-THREADED-WCB',N'Size',N'3/4"'),(N'VF306M-3-4IN-THREADED-WCB',N'Ends',N'Threaded'),(N'VF306M-3-4IN-THREADED-WCB',N'Body',N'WCB'),
+  (N'VF306M-3-4IN-BW-CF8M',N'Size',N'3/4"'),(N'VF306M-3-4IN-BW-CF8M',N'Ends',N'Butt Weld'),(N'VF306M-3-4IN-BW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-3-4IN-BW-WCB',N'Size',N'3/4"'),(N'VF306M-3-4IN-BW-WCB',N'Ends',N'Butt Weld'),(N'VF306M-3-4IN-BW-WCB',N'Body',N'WCB'),
+  (N'VF306M-3-4IN-SW-CF8M',N'Size',N'3/4"'),(N'VF306M-3-4IN-SW-CF8M',N'Ends',N'Socket Weld'),(N'VF306M-3-4IN-SW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-3-4IN-SW-WCB',N'Size',N'3/4"'),(N'VF306M-3-4IN-SW-WCB',N'Ends',N'Socket Weld'),(N'VF306M-3-4IN-SW-WCB',N'Body',N'WCB'),
+  (N'VF306M-1IN-THREADED-CF8M',N'Size',N'1"'),(N'VF306M-1IN-THREADED-CF8M',N'Ends',N'Threaded'),(N'VF306M-1IN-THREADED-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1IN-THREADED-WCB',N'Size',N'1"'),(N'VF306M-1IN-THREADED-WCB',N'Ends',N'Threaded'),(N'VF306M-1IN-THREADED-WCB',N'Body',N'WCB'),
+  (N'VF306M-1IN-BW-CF8M',N'Size',N'1"'),(N'VF306M-1IN-BW-CF8M',N'Ends',N'Butt Weld'),(N'VF306M-1IN-BW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1IN-BW-WCB',N'Size',N'1"'),(N'VF306M-1IN-BW-WCB',N'Ends',N'Butt Weld'),(N'VF306M-1IN-BW-WCB',N'Body',N'WCB'),
+  (N'VF306M-1IN-SW-CF8M',N'Size',N'1"'),(N'VF306M-1IN-SW-CF8M',N'Ends',N'Socket Weld'),(N'VF306M-1IN-SW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1IN-SW-WCB',N'Size',N'1"'),(N'VF306M-1IN-SW-WCB',N'Ends',N'Socket Weld'),(N'VF306M-1IN-SW-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-1-4IN-THREADED-CF8M',N'Size',N'1 1/4"'),(N'VF306M-1-1-4IN-THREADED-CF8M',N'Ends',N'Threaded'),(N'VF306M-1-1-4IN-THREADED-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-1-4IN-THREADED-WCB',N'Size',N'1 1/4"'),(N'VF306M-1-1-4IN-THREADED-WCB',N'Ends',N'Threaded'),(N'VF306M-1-1-4IN-THREADED-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-1-4IN-BW-CF8M',N'Size',N'1 1/4"'),(N'VF306M-1-1-4IN-BW-CF8M',N'Ends',N'Butt Weld'),(N'VF306M-1-1-4IN-BW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-1-4IN-BW-WCB',N'Size',N'1 1/4"'),(N'VF306M-1-1-4IN-BW-WCB',N'Ends',N'Butt Weld'),(N'VF306M-1-1-4IN-BW-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-1-4IN-SW-CF8M',N'Size',N'1 1/4"'),(N'VF306M-1-1-4IN-SW-CF8M',N'Ends',N'Socket Weld'),(N'VF306M-1-1-4IN-SW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-1-4IN-SW-WCB',N'Size',N'1 1/4"'),(N'VF306M-1-1-4IN-SW-WCB',N'Ends',N'Socket Weld'),(N'VF306M-1-1-4IN-SW-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-1-2IN-THREADED-CF8M',N'Size',N'1 1/2"'),(N'VF306M-1-1-2IN-THREADED-CF8M',N'Ends',N'Threaded'),(N'VF306M-1-1-2IN-THREADED-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-1-2IN-THREADED-WCB',N'Size',N'1 1/2"'),(N'VF306M-1-1-2IN-THREADED-WCB',N'Ends',N'Threaded'),(N'VF306M-1-1-2IN-THREADED-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-1-2IN-BW-CF8M',N'Size',N'1 1/2"'),(N'VF306M-1-1-2IN-BW-CF8M',N'Ends',N'Butt Weld'),(N'VF306M-1-1-2IN-BW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-1-2IN-BW-WCB',N'Size',N'1 1/2"'),(N'VF306M-1-1-2IN-BW-WCB',N'Ends',N'Butt Weld'),(N'VF306M-1-1-2IN-BW-WCB',N'Body',N'WCB'),
+  (N'VF306M-1-1-2IN-SW-CF8M',N'Size',N'1 1/2"'),(N'VF306M-1-1-2IN-SW-CF8M',N'Ends',N'Socket Weld'),(N'VF306M-1-1-2IN-SW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-1-1-2IN-SW-WCB',N'Size',N'1 1/2"'),(N'VF306M-1-1-2IN-SW-WCB',N'Ends',N'Socket Weld'),(N'VF306M-1-1-2IN-SW-WCB',N'Body',N'WCB'),
+  (N'VF306M-2IN-THREADED-CF8M',N'Size',N'2"'),(N'VF306M-2IN-THREADED-CF8M',N'Ends',N'Threaded'),(N'VF306M-2IN-THREADED-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-2IN-THREADED-WCB',N'Size',N'2"'),(N'VF306M-2IN-THREADED-WCB',N'Ends',N'Threaded'),(N'VF306M-2IN-THREADED-WCB',N'Body',N'WCB'),
+  (N'VF306M-2IN-BW-CF8M',N'Size',N'2"'),(N'VF306M-2IN-BW-CF8M',N'Ends',N'Butt Weld'),(N'VF306M-2IN-BW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-2IN-BW-WCB',N'Size',N'2"'),(N'VF306M-2IN-BW-WCB',N'Ends',N'Butt Weld'),(N'VF306M-2IN-BW-WCB',N'Body',N'WCB'),
+  (N'VF306M-2IN-SW-CF8M',N'Size',N'2"'),(N'VF306M-2IN-SW-CF8M',N'Ends',N'Socket Weld'),(N'VF306M-2IN-SW-CF8M',N'Body',N'CF8M'),
+  (N'VF306M-2IN-SW-WCB',N'Size',N'2"'),(N'VF306M-2IN-SW-WCB',N'Ends',N'Socket Weld'),(N'VF306M-2IN-SW-WCB',N'Body',N'WCB')
+) AS v(PartNumber, FilterName, Value) ON v.PartNumber = p.PartNumber
+JOIN Filters f ON f.Name = v.FilterName WHERE p.CategoryId=@CategoryId;
+
+SELECT COUNT(*) AS Products FROM CatalogProducts WHERE CategoryId=@CategoryId;

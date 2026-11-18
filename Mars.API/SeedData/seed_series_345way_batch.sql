@@ -193,13 +193,13 @@ GO
 -- ===== Series 30M (48 products, quote-only Price NULL) =====
 IF NOT EXISTS (SELECT 1 FROM Categories WHERE Name = N'Series 30M')
     INSERT INTO Categories (Name, Description, BodyMaterial, SeatMaterial, Design, Approvals, KeyFeatures)
-    VALUES (N'Series 30M', N'The Mars Series 30M is a 3-way flanged trunnion-mounted SIL3-capable ball valve rated ANSI Class 150/300, PN10/16 and PN25/40, full port, with L/T-port ball, sizes 1 1/2" to 6". CF8M or WCB body with PTFE/RTFE seats.', N'CF8M / WCB', N'PTFE / RTFE', N'Three-Way, Flanged, Trunnion, Full Port, SIL3', NULL, N'3-way flanged trunnion design
+    VALUES (N'Series 30M', N'The Mars Series 30M is a 3-way flanged trunnion-mounted SIL3-capable ball valve rated ANSI Class 150/300, PN10/16 and PN25/40, full port, with L/T-port ball, sizes 1 1/2" to 6". CF8M or WCB body with PTFE/RTFE seats standard (other seat options on request).', N'CF8M / WCB', N'PTFE / RTFE', N'Three-Way, Flanged, Trunnion, Full Port, SIL3', NULL, N'3-way flanged trunnion design
 SIL3 capable
 Full port
 Flange ratings: ANSI #150/#300, PN10/16, PN25/40
 Ball configuration: L port, T port
 CF8M / WCB body
-PTFE / RTFE seats
+PTFE / RTFE seats standard; other seat options on request
 Size 1 1/2" to 6"');
 GO
 DECLARE @SeriesName nvarchar(100) = N'Series 30M';

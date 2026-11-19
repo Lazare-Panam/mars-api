@@ -14,7 +14,9 @@ using Mars.API.Services.Notification;
 using Mars.API.Services.Products;
 using Mars.API.Services.SeriesProducts;
 using Mars.API.Services.User;
+using Mars.API.Services.Search;
 using Mars.API.Settings;
+using Meilisearch;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -94,6 +96,18 @@ builder.Services.AddScoped<ICreditApplicationService, CreditApplicationService>(
 builder.Services.AddScoped<IStockListService, StockListService>();
 builder.Services.AddOptions<TurnstileSettings>().Bind(builder.Configuration.GetSection(nameof(TurnstileSettings)));
 builder.Services.AddHttpClient<ITurnstileService, TurnstileService>();
+
+// Meilisearch: bind settings, register the client as a singleton (stateless, wraps one
+// HttpClient — reuse process-wide), and the search service as scoped (it depends on the
+// scoped ApplicationDBContext, so singleton would be a captive dependency).
+builder.Services.AddOptions<MeilisearchSettings>().Bind(builder.Configuration.GetSection(nameof(MeilisearchSettings)));
+builder.Services.AddSingleton(sp =>
+{
+    var s = sp.GetRequiredService<IOptions<MeilisearchSettings>>().Value;
+    return new MeilisearchClient(s.Host, s.ApiKey);
+});
+builder.Services.AddScoped<ISearchService, SearchService>();
+
 builder.Services.AddRateLimiter(options =>
 {
     // Blocked callers get 429 Too Many Requests (not the default 503).
@@ -108,6 +122,19 @@ builder.Services.AddRateLimiter(options =>
             {
                 AutoReplenishment = true,
                 PermitLimit = 5,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+
+    // Public search endpoint: a looser 30-per-minute-per-IP bucket, applied via
+    // [EnableRateLimiting("search")] on SearchController's GET.
+    options.AddPolicy("search", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 30,
                 QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(1)
             }));
@@ -206,6 +233,12 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+builder.Services.AddOptions<MeilisearchSettings>().Bind(builder.Configuration.GetSection(nameof(MeilisearchSettings)));
+builder.Services.AddSingleton(sp =>
+{
+    var s = sp.GetRequiredService<IOptions<MeilisearchSettings>>().Value;
+    return new MeilisearchClient(s.Host, s.ApiKey);
 });
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IProductService, ProductService>();

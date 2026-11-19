@@ -1,0 +1,51 @@
+[
+  {
+    "id": "VFM30-1-2IN-3WAY-THREADED-FP",
+    "partNumber": "VFM30-1-2IN-3WAY-THREADED-FP",
+    "series": "Mars Series FM-30 Metal Seated Multi-Port Ball Valve",
+    "seriesName": "Series FM-30",
+    "attributes": [
+      { "name": "Ball Configuration", "value": "3-Way" },
+      { "name": "Ends", "value": "Threaded" },
+      { "name": "Port", "value": "Full Port" },
+      { "name": "Body", "value": "CF8M" },
+      { "name": "Seat", "value": "SS316 + Stellite" },
+      { "name": "Size", "value": "1/2\"" }
+    ],
+    "specs": "3-Way Threaded Full Port CF8M SS316 + Stellite 1/2\"",
+    "image": "https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/multi-port/FM-30.jpg",
+    "href": "/series/78/variants/VFM30-1-2IN-3WAY-THREADED-FP"
+  },
+  {
+    "id": "VFM30-2IN-4WAY-FLANGED-RP",
+    "partNumber": "VFM30-2IN-4WAY-FLANGED-RP",
+    "series": "Mars Series FM-30 Metal Seated Multi-Port Ball Valve",
+    "seriesName": "Series FM-30",
+    "attributes": [
+      { "name": "Ball Configuration", "value": "4-Way" },
+      { "name": "Ends", "value": "Flanged" },
+      { "name": "Port", "value": "Reduced Port" },
+      { "name": "Body", "value": "WCB" },
+      { "name": "Seat", "value": "SS316 + Stellite" },
+      { "name": "Size", "value": "2\"" }
+    ],
+    "specs": "4-Way Flanged Reduced Port WCB SS316 + Stellite 2\"",
+    "image": "https://pblol2.blob.core.windows.net/mars-valves/ball-valves/metal-seated/multi-port/FM-30.jpg",
+    "href": "/series/78/variants/VFM30-2IN-4WAY-FLANGED-RP"
+  },
+  {
+    "id": "V84C-1IN-THREADED-CF8M",
+    "partNumber": "V84C-1IN-THREADED-CF8M",
+    "series": "Mars Series 84C Cryogenic Three-Piece Ball Valve",
+    "seriesName": "Series 84C-10/20/30",
+    "attributes": [
+      { "name": "Ends", "value": "Threaded" },
+      { "name": "Body", "value": "CF8M" },
+      { "name": "Seat", "value": "PCTFE" },
+      { "name": "Size", "value": "1\"" }
+    ],
+    "specs": "Cryogenic Threaded CF8M PCTFE 1\"",
+    "image": "https://pblol2.blob.core.windows.net/mars-valves/ball-valves/cyrogenic/84c.jpg",
+    "href": "/series/69/variants/V84C-1IN-THREADED-CF8M"
+  }
+]
